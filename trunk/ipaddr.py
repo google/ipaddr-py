@@ -25,17 +25,14 @@ __version__ = '1.0.0'
 
 class Error(Exception):
   """Base class for exceptions."""
-  pass
 
 
 class IPTypeError(Error):
   """Tried to perform a v4 action on v6 object or vice versa."""
-  pass
 
 
 class IPAddressExclusionError(Error):
   """An Error we should never see occurred in address exclusion."""
-  pass
 
 
 class IPv4IpValidationError(Error):
