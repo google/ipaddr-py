@@ -359,6 +359,7 @@ class BaseIP(object):
 
   @property
   def ip_ext(self):
+    """Dotted decimal or colon string version of the IP address."""
     return self._StrFromIpInt(self.ip)
 
   @property
@@ -372,30 +373,37 @@ class BaseIP(object):
 
   @property
   def broadcast_ext(self):
+    """Dotted decimal or colon string version of the broadcast address."""
     return self._StrFromIpInt(self.broadcast)
 
   @property
   def hostmask(self):
+    """Integer representation of the hostmask."""
     return self.netmask ^ self._ALL_ONES
 
   @property
   def hostmask_ext(self):
+    """Dotted decimal or colon string representation of the hostmask."""
     return self._StrFromIpInt(self.hostmask)
 
   @property
   def network(self):
+    """Integer representation of the network."""
     return self.ip & self.netmask
 
   @property
   def network_ext(self):
+    """Dotted decimal or colon string representation of the network."""
     return self._StrFromIpInt(self.network)
 
   @property
   def netmask_ext(self):
+    """Dotted decimal or colon string representation of the netmask."""
     return self._StrFromIpInt(self.netmask)
 
   @property
   def numhosts(self):
+    """Number of hosts in the current subnet."""
     return self.broadcast - self.network + 1
 
   @property
