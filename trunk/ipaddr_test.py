@@ -29,6 +29,10 @@ class IpaddrUnitTest(unittest.TestCase):
     self.ipv4_hostmask = ipaddr.IPv4('10.0.0.1/0.255.255.255')
     self.ipv6 = ipaddr.IPv6('2001:658:22a:cafe:200:0:0:1/64')
 
+  def testRepr(self):
+    self.assertEqual("IPv4('1.2.3.4/32')", repr(ipaddr.IPv4('1.2.3.4')))
+    self.assertEqual("IPv6('::1/128')", repr(ipaddr.IPv6('::1')))
+
   def testGetNetwork(self):
     self.assertEqual(self.ipv4.network, 16909056)
     self.assertEqual(self.ipv4.network_ext, '1.2.3.0')
