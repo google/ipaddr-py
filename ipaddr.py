@@ -223,6 +223,9 @@ class BaseIP(object):
     except AttributeError:
       return super(BaseIP, self).__cmp__(other)
 
+  def __repr__(self):
+    return '%s(%r)' % (self.__class__.__name__, str(self))
+
   def AddressExclude(self, other):
     """Remove an address from a larger block.
 
@@ -546,9 +549,6 @@ class IPv4(BaseIP):
       self.prefixlen = 32
       self.netmask = self._IpIntFromPrefixlen(self.prefixlen)
 
-  def __repr__(self):
-    return '<ipaddr.IPv4: %s>' % str(self)
-
   def SetPrefix(self, prefixlen):
     """Change the prefix length.
 
@@ -824,9 +824,6 @@ class IPv6(BaseIP):
       raise IPv6IpValidationError(addr[0])
 
     self.ip = self._IpIntFromStr(addr[0])
-
-  def __repr__(self):
-    return '<ipaddr.IPv6: %s>' % str(self)
 
   @property
   def ip_ext_full(self):
