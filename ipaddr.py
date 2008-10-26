@@ -760,14 +760,14 @@ class IPv6(BaseIP):
 
   Attributes: [examples for IPv6('2001:658:22A:CAFE:200::1/64')]
     .ip: 42540616829182469433547762482097946625L
-    .ip_ext: '2001:658:22A:CAFE:200::1'
-    .ip_ext_full: '2001:0658:022A:CAFE:0200:0000:0000:0001'
+    .ip_ext: '2001:658:22a:cafe:200::1'
+    .ip_ext_full: '2001:0658:022a:cafe:0200:0000:0000:0001'
     .network: 42540616829182469433403647294022090752L
-    .network_ext: '2001:658:22A:CAFE::'
+    .network_ext: '2001:658:22a:cafe::'
     .hostmask: 18446744073709551615L
-    .hostmask_ext: '::FFFF:FFFF:FFFF:FFFF'
+    .hostmask_ext: '::ffff:ffff:ffff:ffff'
     .broadcast: 42540616829182469451850391367731642367L
-    .broadcast_ext: '2001:658:22A:CAFE:FFFF:FFFF:FFFF:FFFF'
+    .broadcast_ext: '2001:658:22a:cafe:ffff:ffff:ffff:ffff'
     .netmask: 340282366920938463444927863358058659840L
     .netmask_ext: 64
     .prefixlen: 64
@@ -945,11 +945,11 @@ class IPv6(BaseIP):
         new_ip.append('0000')
       new_ip += hextet[1].split(':')
 
-      # Now need to make sure every hextet is 4 upper case characters.
+      # Now need to make sure every hextet is 4 lower case characters.
       # If a hextet is < 4 characters, we've got missing leading 0's.
       ret_ip = []
       for hextet in new_ip:
-        ret_ip.append(('0' * (4 - len(hextet)) + hextet).upper())
+        ret_ip.append(('0' * (4 - len(hextet)) + hextet).lower())
       return ':'.join(ret_ip)
     # We've already got a longhand ip_str.
     return ip_str
@@ -1108,10 +1108,10 @@ class IPv6(BaseIP):
     if ip_int > self._ALL_ONES:
       raise ValueError('IPv6 address is too large')
 
-    hex_str = '%032X' % ip_int
+    hex_str = '%032x' % ip_int
     hextets = []
     for x in range(0, 32, 4):
-      hextets.append('%X' % int(hex_str[x:x+4], 16))
+      hextets.append('%x' % int(hex_str[x:x+4], 16))
 
     hextets = self._CompressHextets(hextets)
     return ':'.join(hextets)
