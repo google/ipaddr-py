@@ -41,9 +41,9 @@ class IpaddrUnitTest(unittest.TestCase):
     self.assertEqual(self.ipv6.network,
                      42540616829182469433403647294022090752)
     self.assertEqual(self.ipv6.network_ext,
-                     '2001:658:22A:CAFE::')
+                     '2001:658:22a:cafe::')
     self.assertEqual(self.ipv6.hostmask_ext,
-                     '::FFFF:FFFF:FFFF:FFFF')
+                     '::ffff:ffff:ffff:ffff')
 
   def testIpFromInt(self):
     self.assertEqual(self.ipv4.ip, ipaddr.IPv4(16909060).ip)
@@ -70,9 +70,9 @@ class IpaddrUnitTest(unittest.TestCase):
 
     self.assertEqual(self.ipv6.ip, 42540616829182469433547762482097946625)
     self.assertEqual(self.ipv6.ip_ext,
-                     '2001:658:22A:CAFE:200::1')
+                     '2001:658:22a:cafe:200::1')
     self.assertEqual(self.ipv6.ip_ext_full,
-                     '2001:0658:022A:CAFE:0200:0000:0000:0001')
+                     '2001:0658:022a:cafe:0200:0000:0000:0001')
 
   def testGetNetmask(self):
     self.assertEqual(self.ipv4.netmask, 4294967040L)
@@ -98,7 +98,7 @@ class IpaddrUnitTest(unittest.TestCase):
     self.assertEqual(self.ipv6.broadcast,
                      42540616829182469451850391367731642367)
     self.assertEqual(self.ipv6.broadcast_ext,
-                     '2001:658:22A:CAFE:FFFF:FFFF:FFFF:FFFF')
+                     '2001:658:22a:cafe:ffff:ffff:ffff:ffff')
 
   def testGetPrefixlen(self):
     self.assertEqual(self.ipv4.prefixlen, 24)
@@ -113,7 +113,7 @@ class IpaddrUnitTest(unittest.TestCase):
 
     self.assertEqual(self.ipv6.Supernet().prefixlen, 63)
     self.assertEqual(self.ipv6.Supernet().network_ext,
-                     '2001:658:22A:CAFE::')
+                     '2001:658:22a:cafe::')
     self.assertEqual(ipaddr.IPv6('::0/0').Supernet(), ipaddr.IPv6('::0/0'))
 
   def testGetSupernet3(self):
@@ -122,7 +122,7 @@ class IpaddrUnitTest(unittest.TestCase):
 
     self.assertEqual(self.ipv6.Supernet(3).prefixlen, 61)
     self.assertEqual(self.ipv6.Supernet(3).network_ext,
-                     '2001:658:22A:CAF8::')
+                     '2001:658:22a:caf8::')
 
   def testGetSubnet(self):
     self.assertEqual(self.ipv4.Subnet()[0].prefixlen, 25)
@@ -154,10 +154,10 @@ class IpaddrUnitTest(unittest.TestCase):
     ipsv6 = [str(x) for x in self.ipv6.Subnet(2)]
     self.assertEqual(
         ipsv6,
-        ['2001:658:22A:CAFE::/66',
-         '2001:658:22A:CAFE:4000::/66',
-         '2001:658:22A:CAFE:8000::/66',
-         '2001:658:22A:CAFE:C000::/66'])
+        ['2001:658:22a:cafe::/66',
+         '2001:658:22a:cafe:4000::/66',
+         '2001:658:22a:cafe:8000::/66',
+         '2001:658:22a:cafe:c000::/66'])
 
   def testSubnetFailsForLargeCidrDiff(self):
     self.assertRaises(ipaddr.PrefixlenDiffInvalidError, self.ipv4.Subnet, 9)
@@ -217,7 +217,7 @@ class IpaddrUnitTest(unittest.TestCase):
     self.assertRaises(IndexError, self.ipv4.__getitem__, 256)
 
     self.assertEqual(self.ipv6[5],
-                     '2001:658:22A:CAFE::5')
+                     '2001:658:22a:cafe::5')
 
   def testEquals(self):
     self.assertTrue(self.ipv4.__eq__(ipaddr.IPv4('1.2.3.4/24')))
@@ -225,11 +225,11 @@ class IpaddrUnitTest(unittest.TestCase):
     self.assertFalse(self.ipv4.__eq__(ipaddr.IPv4('1.2.3.5/24')))
 
     self.assertTrue(self.ipv6.__eq__(
-        ipaddr.IPv6('2001:658:22A:CAFE:200::1/64')))
+        ipaddr.IPv6('2001:658:22a:cafe:200::1/64')))
     self.assertFalse(self.ipv6.__eq__(
-        ipaddr.IPv6('2001:658:22A:CAFE:200::1/63')))
+        ipaddr.IPv6('2001:658:22a:cafe:200::1/63')))
     self.assertFalse(self.ipv6.__eq__(
-        ipaddr.IPv6('2001:658:22A:CAFE:200::2/64')))
+        ipaddr.IPv6('2001:658:22a:cafe:200::2/64')))
 
   def testSlash32Constructor(self):
     self.assertEquals(str(ipaddr.IPv4('1.2.3.4/255.255.255.255')),
@@ -281,7 +281,7 @@ class IpaddrUnitTest(unittest.TestCase):
 
     ip1 = ipaddr.IPv6('2001::2000/96')
     ip2 = ipaddr.IPv6('2001::2001/96')
-    ip3 = ipaddr.IPv6('2001:FFFF::2000/96')
+    ip3 = ipaddr.IPv6('2001:ffff::2000/96')
 
     self.assertEquals(ip1.__cmp__(ip3), -1)
     self.assertEquals(ip3.__cmp__(ip2), 1)
@@ -354,7 +354,7 @@ class IpaddrUnitTest(unittest.TestCase):
     self.assertEqual(str(addr1), str(addr2))
 
   def testIPv6PrefixFromInt(self):
-    addr1 = ipaddr.IP('2001:0658:022A:CAFE:0200::1/64')
+    addr1 = ipaddr.IP('2001:0658:022a:cafe:0200::1/64')
     addr2 = ipaddr.IPv6(addr1.ip)  # clone prefix
     addr2.SetPrefix(addr1.prefixlen)
     addr3 = ipaddr.IP(123456)
@@ -368,7 +368,7 @@ class IpaddrUnitTest(unittest.TestCase):
   def testCopyConstructor(self):
     addr1 = ipaddr.IP('10.1.1.0/24')
     addr2 = ipaddr.IP(addr1)
-    addr3 = ipaddr.IP('2001:658:22A:CAFE:200::1/64')
+    addr3 = ipaddr.IP('2001:658:22a:cafe:200::1/64')
     addr4 = ipaddr.IP(addr3)
 
     self.assertEqual(addr1, addr2)
@@ -381,14 +381,14 @@ class IpaddrUnitTest(unittest.TestCase):
         '2001:0:0:4:5:6:7:8': '2001::4:5:6:7:8/128',
         '2001:0:3:4:5:6:7:8': '2001:0:3:4:5:6:7:8/128',
         '2001:0::3:4:5:6:7:8': '2001:0:3:4:5:6:7:8/128',
-        '0:0:3:0:0:0:0:ffff': '0:0:3::FFFF/128',
-        '0:0:0:4:0:0:0:ffff': '::4:0:0:0:FFFF/128',
-        '0:0:0:0:5:0:0:ffff': '::5:0:0:FFFF/128',
+        '0:0:3:0:0:0:0:ffff': '0:0:3::ffff/128',
+        '0:0:0:4:0:0:0:ffff': '::4:0:0:0:ffff/128',
+        '0:0:0:0:5:0:0:ffff': '::5:0:0:ffff/128',
         '1:0:0:4:0:0:7:8': '1::4:0:0:7:8/128',
         '0:0:0:0:0:0:0:0': '::/128',
         '0:0:0:0:0:0:0:0/0': '::/0',
         '0:0:0:0:0:0:0:1': '::1/128',
-        '2001:0658:022A:CAFE:0000:0000:0000:0000/66': '2001:658:22A:CAFE::/66',
+        '2001:0658:022a:cafe:0000:0000:0000:0000/66': '2001:658:22a:cafe::/66',
     }
     for uncompressed, compressed in test_addresses.items():
       self.assertEquals(compressed, str(ipaddr.IPv6(uncompressed)))
