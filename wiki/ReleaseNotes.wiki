@@ -1,0 +1,8 @@
+#summary notes from releases
+
+= Release Notes =
+
+== 1.0.1 ==
+
+ * lowercase ipv6 addresses
+
