@@ -4,5 +4,4 @@
 
 == 1.0.1 ==
 
- * lowercase ipv6 addresses
-
+ * lowercase ipv6 addresses (http://codereview.appspot.com/7678)
