@@ -14,5 +14,6 @@ To do work on the release branch: `svn switch https://ipaddr-py.googlecode.com/s
   # Tag the version: `svn copy -m'Tagging 1.0.0 release' https://ipaddr-py.googlecode.com/svn/branches/1.0.x https://ipaddr-py.googlecode.com/svn/tags/1.0.0`
   # Write release notes in the wiki.
   # Prepare tarball: `./setup.py sdist`.  It will appear in `./dist`.
-  # Create a [http://code.google.com/p/ipaddr-py/downloads/entry new download] on Google Code.  Tag it `Featured` and remove that tag from the previous release.
+  # Create a [http://code.google.com/p/ipaddr-py/downloads/entry new download] on Google Code.
+  # Label the release `Featured` and remove that tag from the previous release.  Files with this label will appear on the project front page in a green box.
   # Make an announcement to ipaddr-py-dev@googlegroups.com and (if an a.b.0 release) to Freshmeat.  Be sure to mention notable changes.
