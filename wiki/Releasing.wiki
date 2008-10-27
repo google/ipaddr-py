@@ -6,7 +6,7 @@ Choose a release number; see [http://www.producingoss.com/en/development-cycle.h
 
 If preparing for an a.b.0 release, create a [http://www.producingoss.com/en/release-branches.html release branch] called `a.b.x` (literal `x`): `svn copy -m'Creating 1.0.x release branch' https://ipaddr-py.googlecode.com/svn/trunk/ https://ipaddr-py.googlecode.com/svn/branches/1.0.x`
 
-If preparing for a micro release, first switch your client to the release branch: `svn switch https://ipaddr-py.googlecode.com/svn/branches/1.0.x` (or `svn co` to a new directory).  Then [http://svnbook.red-bean.com/en/1.1/ch04s03.html merge] the changes from the trunk you want, and commit them.
+If preparing for a micro release, first switch your client to the release branch: `svn switch https://ipaddr-py.googlecode.com/svn/branches/1.0.x` (or `svn co` to a new directory).  Then [http://svnbook.red-bean.com/en/1.1/ch04s03.html merge] the changes you want from the trunk (`svn merge -r6:7 https://ipaddr-py.googlecode.com/svn/trunk`), and commit them.
 
 == Actually making a release ==
 
