@@ -25,17 +25,14 @@ __version__ = '1.0.1'
 
 class Error(Exception):
   """Base class for exceptions."""
-  pass
 
 
 class IPTypeError(Error):
   """Tried to perform a v4 action on v6 object or vice versa."""
-  pass
 
 
 class IPAddressExclusionError(Error):
   """An Error we should never see occurred in address exclusion."""
-  pass
 
 
 class IPv4IpValidationError(Error):
@@ -226,6 +223,9 @@ class BaseIP(object):
     except AttributeError:
       return super(BaseIP, self).__cmp__(other)
 
+  def __repr__(self):
+    return '%s(%r)' % (self.__class__.__name__, str(self))
+
   def AddressExclude(self, other):
     """Remove an address from a larger block.
 
@@ -362,6 +362,7 @@ class BaseIP(object):
 
   @property
   def ip_ext(self):
+    """Dotted decimal or colon string version of the IP address."""
     return self._StrFromIpInt(self.ip)
 
   @property
@@ -375,30 +376,37 @@ class BaseIP(object):
 
   @property
   def broadcast_ext(self):
+    """Dotted decimal or colon string version of the broadcast address."""
     return self._StrFromIpInt(self.broadcast)
 
   @property
   def hostmask(self):
+    """Integer representation of the hostmask."""
     return self.netmask ^ self._ALL_ONES
 
   @property
   def hostmask_ext(self):
+    """Dotted decimal or colon string representation of the hostmask."""
     return self._StrFromIpInt(self.hostmask)
 
   @property
   def network(self):
+    """Integer representation of the network."""
     return self.ip & self.netmask
 
   @property
   def network_ext(self):
+    """Dotted decimal or colon string representation of the network."""
     return self._StrFromIpInt(self.network)
 
   @property
   def netmask_ext(self):
+    """Dotted decimal or colon string representation of the netmask."""
     return self._StrFromIpInt(self.netmask)
 
   @property
   def numhosts(self):
+    """Number of hosts in the current subnet."""
     return self.broadcast - self.network + 1
 
   @property
@@ -540,9 +548,6 @@ class IPv4(BaseIP):
     else:
       self.prefixlen = 32
       self.netmask = self._IpIntFromPrefixlen(self.prefixlen)
-
-  def __repr__(self):
-    return '<ipaddr.IPv4: %s>' % str(self)
 
   def SetPrefix(self, prefixlen):
     """Change the prefix length.
@@ -819,9 +824,6 @@ class IPv6(BaseIP):
       raise IPv6IpValidationError(addr[0])
 
     self.ip = self._IpIntFromStr(addr[0])
-
-  def __repr__(self):
-    return '<ipaddr.IPv6: %s>' % str(self)
 
   @property
   def ip_ext_full(self):
