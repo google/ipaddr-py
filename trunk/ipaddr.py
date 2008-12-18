@@ -809,7 +809,10 @@ class IPv6(BaseIP):
 
     # Assume input argument to be string or any object representation
     # which converts into a formatted IP prefix string.
-    addr = str(ipaddr).split('/')
+    addr_str = str(ipaddr)
+    if not addr_str:
+      raise IPv6IpValidationError('null string is not a valid address')
+    addr = addr_str.split('/')
     if len(addr) > 1:
       if self._IsValidNetmask(addr[1]):
         self.prefixlen = int(addr[1])
