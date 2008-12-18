@@ -121,7 +121,7 @@ def IP(ipaddr):
   except (IPv4IpValidationError, IPv4NetmaskValidationError):
     pass
 
-  raise ValueError("%s doesn't appear to be an IPv4 or IPv6 address" % ipaddr)
+  raise ValueError('%r does not appear to be an IPv4 or IPv6 address' % ipaddr)
 
 
 def _CollapseAddressListRecursive(addresses):
@@ -811,7 +811,7 @@ class IPv6(BaseIP):
     # which converts into a formatted IP prefix string.
     addr_str = str(ipaddr)
     if not addr_str:
-      raise IPv6IpValidationError('null string is not a valid address')
+      raise IPv6IpValidationError('')
     addr = addr_str.split('/')
     if len(addr) > 1:
       if self._IsValidNetmask(addr[1]):
