@@ -33,6 +33,14 @@ class IpaddrUnitTest(unittest.TestCase):
     self.assertEqual("IPv4('1.2.3.4/32')", repr(ipaddr.IPv4('1.2.3.4')))
     self.assertEqual("IPv6('::1/128')", repr(ipaddr.IPv6('::1')))
 
+  def testInvalidStrings(self):
+    self.assertRaises(ValueError, ipaddr.IP, '')
+    self.assertRaises(ValueError, ipaddr.IP, 'www.google.com')
+    self.assertRaises(ipaddr.IPv4IpValidationError, ipaddr.IPv4, '')
+    self.assertRaises(ipaddr.IPv4IpValidationError, ipaddr.IPv4, 'google.com')
+    self.assertRaises(ipaddr.IPv6IpValidationError, ipaddr.IPv6, '')
+    self.assertRaises(ipaddr.IPv6IpValidationError, ipaddr.IPv6, 'google.com')
+
   def testGetNetwork(self):
     self.assertEqual(self.ipv4.network, 16909056)
     self.assertEqual(self.ipv4.network_ext, '1.2.3.0')
