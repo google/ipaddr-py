@@ -406,6 +406,14 @@ class IpaddrUnitTest(unittest.TestCase):
     self.assertEqual('2001:0000:0000:0000:0000:0000:0000:0001',
                      addr1._ExplodeShortHandIpStr(addr1.ip_ext))
 
+  def testIntRepresentation(self):
+    self.assertEqual(16909060, int(self.ipv4))
+    self.assertEqual(42540616829182469433547762482097946625, int(self.ipv6))
+
+  def testHexRepresentation(self):
+    self.assertEqual('0x1020304', hex(self.ipv4))
+    self.assertEqual('0x20010658022acafe0200000000000001L', hex(self.ipv6))
+
 
 if __name__ == '__main__':
   unittest.main()

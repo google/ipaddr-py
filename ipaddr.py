@@ -226,6 +226,12 @@ class BaseIP(object):
   def __repr__(self):
     return '%s(%r)' % (self.__class__.__name__, str(self))
 
+  def __int__(self):
+    return self.ip
+
+  def __hex__(self):
+    return hex(self.ip)
+
   def AddressExclude(self, other):
     """Remove an address from a larger block.
 
