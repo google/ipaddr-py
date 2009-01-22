@@ -1048,7 +1048,7 @@ class IPv6(BaseIP):
       for _ in xrange(2):
         octets.append(hex(ipv4_int & 0xFFFF).lstrip('0x').rstrip('L'))
         ipv4_int >>= 16
-      fields.extend(octets)
+      fields.extend(reversed(octets))
 
     for field in fields:
       ip_int = (ip_int << 16) + int(field, 16)
