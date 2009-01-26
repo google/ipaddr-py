@@ -67,7 +67,7 @@ True
 >>> str(ipaddr.IP('1.2.3.4'))
 '1.2.3.4/32'
 
-# int/hex. pending submission of issue 11862. http://codereview.appspot.com/11862/show
+# int/hex.
 >>> int(ipaddr.IP('1.2.3.4'))
 16909060
 >>> hex(ipaddr.IP('1.2.3.4'))
@@ -94,5 +94,30 @@ IPv4('10.0.0.0/7')
  IPv4('10.0.0.64/26'), IPv4('10.0.0.128/25')]
 
 }}}
+
+=== IPv6 ===
+
+IPv6 methods are exactly the same as their IPv4 counterparts.  this is because a lot of the functionality for both the IPv4 and IPv6 classes is inherited from the BaseIP class. For example:
+
+{{{
+>>> addr = ipaddr.IPv6('ffff::1/120')
+>>> addr
+IPv6('ffff::1/120')
+>>> addr.prefixlen
+120
+>>> addr == ipaddr.IPv6('ffff::2/120')
+False
+>>> addr > ipaddr.IPv6('ffff::2/120')
+False
+>>> addr < ipaddr.IPv6('ffff::2/120')
+True
+>>> addr in ipaddr.IPv6('ffff::1/119')
+True
+>>> hex(addr)
+'0xFFFF0000000000000000000000000001L'
+>>> int(addr)
+340277174624079928635746076935438991361L
+}}}
+
 
 As always, consult your local help(ipaddr) pydoc documentation with questions.
