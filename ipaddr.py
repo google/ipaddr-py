@@ -21,7 +21,7 @@ and prefixes.
 
 """
 
-__version__ = 'trunk'
+__version__ = '1.0.2'
 
 
 class Error(Exception):
