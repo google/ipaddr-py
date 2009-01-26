@@ -5,6 +5,9 @@
 Here are the visible changes for each release.
 
 == 1.0.2 ==
+  * r52 Force the return value in testHexRepresentation to uppercase to workaround Python version. (smart)
+  * r51 Fix testHexRepresentation().  Hex representations of longs are uppercase. (smart)
+  * r50 Remove trailing whitespace and update docstrings. (smart)
   * r44. this makes the spacing and docstrings pep8 compliant. (pmoody)
   * r43. When processing the IPv4 mapped address 16 bits at a time, the components are stored in the reverse order.  Updated the test to use a non-symmetric IPv4 address, which exhibited the bug. (smart)
   * r40. implment __int__ and __hex__. will need to be updated for py3k (to use __index__) (pmoody)
