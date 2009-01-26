@@ -421,7 +421,13 @@ class IpaddrUnitTest(unittest.TestCase):
 
     def testHexRepresentation(self):
         self.assertEqual('0x1020304', hex(self.ipv4))
-        self.assertEqual('0x20010658022ACAFE0200000000000001L', hex(self.ipv6))
+
+        # Force the return value to uppercase to workaround Python version
+        # differences, i.e.:
+        #   2.4.3: hex(long(10)) == '0xAL'
+        #   2.5.1: hex(long(10)) == '0xaL'
+        self.assertEqual('0X20010658022ACAFE0200000000000001L',
+                         hex(self.ipv6).upper())
 
 
 if __name__ == '__main__':
