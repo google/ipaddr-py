@@ -421,7 +421,7 @@ class IpaddrUnitTest(unittest.TestCase):
 
     def testHexRepresentation(self):
         self.assertEqual('0x1020304', hex(self.ipv4))
-        self.assertEqual('0x20010658022acafe0200000000000001L', hex(self.ipv6))
+        self.assertEqual('0x20010658022ACAFE0200000000000001L', hex(self.ipv6))
 
 
 if __name__ == '__main__':
