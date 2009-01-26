@@ -309,8 +309,8 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEquals(ipv6.__cmp__(ipv4), 1)
         self.assertEquals(ipv4.__cmp__(ipv6), -1)
 
-    def testEmbeddedIPv4(self):
-        ipv4_string = '254.254.254.254'
+    def testEmbeddedIpv4(self):
+        ipv4_string = '192.168.0.1'
         ipv4 = ipaddr.IPv4(ipv4_string)
         v4compat_ipv6 = ipaddr.IPv6('::%s' % ipv4_string)
         self.assertEquals(v4compat_ipv6.ip, ipv4.ip)
