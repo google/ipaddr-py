@@ -274,7 +274,7 @@ class BaseIP(object):
 
         Returns:
             A sorted list of IP objects addresses which is self minus
-              other.
+            other.
 
         Raises:
             IPTypeError: If self and other are of difffering address
@@ -325,13 +325,13 @@ class BaseIP(object):
 
     def CompareNetworks(self, other):
         """Compare two IP objects.
-        
+
         This is only concerned about the comparison of the integer
         representation of the network addresses.  This means that the
         host bits aren't considered at all in this method.  If you want
         to compare host bits, you can easily enough do a
         'HostA.ip < HostB.ip'
-        
+
         Args:
             other: An IP object.
 
@@ -359,7 +359,7 @@ class BaseIP(object):
         """
         if self.version != other.version:
             return cmp(self.version, other.version)
-        
+
         if self.network < other.network:
             return -1
         if self.network > other.network:
@@ -453,6 +453,7 @@ class BaseIP(object):
 
         Returns:
             An integer.
+
         """
         if not prefixlen and prefixlen != 0:
             prefixlen = self.prefixlen
@@ -481,7 +482,7 @@ class BaseIP(object):
         """Turn a prefix length into a dotted decimal string.
 
         Args:
-            prefixlen: The netmask prefix length.
+            prefixlen: An integer, the netmask prefix length.
 
         Returns:
             A string, the dotted decimal netmask string.
@@ -589,10 +590,10 @@ class IPv4(BaseIP):
 
     def SetPrefix(self, prefixlen):
         """Change the prefix length.
-        
+
         Args:
             prefixlen: An integer, the new prefix length.
-                
+
         Raises:
             IPv4NetmaskValidationError: If prefixlen is out of bounds.
 
@@ -604,10 +605,10 @@ class IPv4(BaseIP):
 
     def Subnet(self, prefixlen_diff=1):
         """The subnets which join to make the current subnet.
-      
+
         In the case that self contains only one IP
         (self.prefixlen == 32), return a list with just ourself.
-      
+
         Args:
             prefixlen_diff: An integer, the amount the prefix length
               should be increased by.  Given a /24 network and a
@@ -772,7 +773,7 @@ class IPv4(BaseIP):
 
         Returns:
             A boolean, True if the string is a valid dotted decimal IP
-              string.
+            string.
 
         """
         octets = ip_str.split('.')
@@ -800,7 +801,7 @@ class IPv4(BaseIP):
 
         Returns:
             A boolean, True if the prefix represents a valid IPv4
-              netmask.
+            netmask.
 
         """
         if len(netmask.split('.')) == 4:
@@ -899,10 +900,10 @@ class IPv6(BaseIP):
 
     def SetPrefix(self, prefixlen):
         """Change the prefix length.
-        
+
         Args:
             prefixlen: An integer, the new prefix length.
-        
+
         Raises:
             IPv6NetmaskValidationError: If prefixlen is out of bounds.
 
@@ -911,29 +912,30 @@ class IPv6(BaseIP):
             raise IPv6NetmaskValidationError(prefixlen)
         self.prefixlen = prefixlen
         self.netmask = self._IpIntFromPrefixlen(self.prefixlen)
-        
+
     def Subnet(self, prefixlen_diff=1):
         """The subnets which join to make the current subnet.
-        
+
         In the case that self contains only one IP
         (self.prefixlen == 128), return a list with just ourself.
-        
+
         Args:
             prefixlen_diff: An integer, the amount the prefix length
               should be increased by.
-        
+
         Returns:
             A list of IPv6 objects.
-        
+
         Raises:
             PrefixlenDiffInvalidError: The prefixlen_diff is too small
               or too large.
+
         """
         # Preserve original functionality (return [self] if
         # self.prefixlen == 128).
         if self.prefixlen == 128:
             return [self]
-        
+
         if prefixlen_diff < 0:
             raise PrefixlenDiffInvalidError('Prefix length diff must be > 0')
         new_prefixlen = self.prefixlen + prefixlen_diff
@@ -960,13 +962,13 @@ class IPv6(BaseIP):
         """The supernet containing the current network.
 
         Args:
-            prefixlen_diff: int - Amount the prefix length of the
+            prefixlen_diff: An integer, the amount the prefix length of the
               network should be decreased by.  For example, given a /96
               network and a prefixlen_diff of 3, a supernet with a /93
               netmask is returned.
 
         Returns:
-            an IPv6 object.
+            An IPv6 object.
 
         Raises:
             PrefixlenDiffInvalidError: If
@@ -1084,7 +1086,7 @@ class IPv6(BaseIP):
 
         Returns:
             A boolean, True if the prefix represents a valid IPv6
-              netmask.
+            netmask.
 
         """
         try:
@@ -1136,7 +1138,7 @@ class IPv6(BaseIP):
         the IPv6 address.
 
         Args:
-            hextets: The list of strings to compress.
+            hextets: A list of strings, the hextets to compress.
 
         Returns:
             A list of strings.
