@@ -8,3 +8,10 @@ Here are the visible changes for each release.
 
   * str() now produces lowercase for IPv6 addresses, to match inet_pton(3). (http://codereview.appspot.com/7678)
   * repr() now produces strings that can be pasted back into the interpreter.
+
+== 1.0.2 ==
+  * r44. this makes the spacing and docstrings pep8 compliant. (pmoody)
+  * r43. When processing the IPv4 mapped address 16 bits at a time, the components are stored in the reverse order.  Updated the test to use a non-symmetric IPv4 address, which exhibited the bug. (smart)
+  * r40. implment __int__ and __hex__. will need to be updated for py3k (to use __index__) (pmoody)
+  * r38 A cleanup from  issue 9 : Make exception messages consistent for IP(''), IPv4(''), IPv6('') (smart)
+  * r37 Fix for  issue 9 : ipaddr.IP('') should raise ValueError (mshields)
