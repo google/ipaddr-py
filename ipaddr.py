@@ -380,6 +380,10 @@ class BaseIP(object):
     # backwards compatibility
     CompareNetworks = compare_networks
 
+    def get_prefix(self):
+        """Return the current prefix length."""
+        return self._prefixlen
+
     def __str__(self):
         return  '%s/%s' % (self._string_from_ip_int(self.ip),
                            str(self.prefixlen))
@@ -550,7 +554,7 @@ class IPv4(BaseIP):
         # Efficient constructor from integer.
         if isinstance(ipaddr, int) or isinstance(ipaddr, long):
             self.ip = ipaddr
-            self.prefixlen = 32
+            self._prefixlen = 32
             self.netmask = self._ALL_ONES
             if ipaddr < 0 or ipaddr > self._ALL_ONES:
                 raise IPv4IpValidationError(ipaddr)
@@ -579,16 +583,16 @@ class IPv4(BaseIP):
                         self._ip_int_from_string(addr[1]) ^ self._ALL_ONES)
                 else:
                     self.netmask = self._ip_int_from_string(addr[1])
-                self.prefixlen = self._prefix_from_ip_int(self.netmask)
+                self._prefixlen = self._prefix_from_ip_int(self.netmask)
             else:
                 # We have a netmask in prefix length form.
                 if not self._is_valid_netmask(addr[1]):
                     raise IPv4NetmaskValidationError(addr[1])
-                self.prefixlen = int(addr[1])
-                self.netmask = self._ip_int_from_prefix(self.prefixlen)
+                self._prefixlen = int(addr[1])
+                self.netmask = self._ip_int_from_prefix(self._prefixlen)
         else:
-            self.prefixlen = 32
-            self.netmask = self._ip_int_from_prefix(self.prefixlen)
+            self._prefixlen = 32
+            self.netmask = self._ip_int_from_prefix(self._prefixlen)
 
     def set_prefix(self, prefixlen):
         """Change the prefix length.
@@ -602,17 +606,19 @@ class IPv4(BaseIP):
         """
         if not 0 <= prefixlen <= 32:
             raise IPv4NetmaskValidationError(prefixlen)
-        self.prefixlen = prefixlen
-        self.netmask = self._ip_int_from_prefix(self.prefixlen)
+        self._prefixlen = prefixlen
+        self.netmask = self._ip_int_from_prefix(self._prefixlen)
 
     # backwards compatibility
     SetPrefix = set_prefix
+
+    prefixlen = property(fget=BaseIP.get_prefix, fset=set_prefix)
 
     def subnet(self, prefixlen_diff=1):
         """The subnets which join to make the current subnet.
 
         In the case that self contains only one IP
-        (self.prefixlen == 32), return a list with just ourself.
+        (self._prefixlen == 32), return a list with just ourself.
 
         Args:
             prefixlen_diff: An integer, the amount the prefix length
@@ -629,7 +635,7 @@ class IPv4(BaseIP):
               or too large.
 
         """
-        if self.prefixlen == 32:
+        if self._prefixlen == 32:
             return [self]
 
         if prefixlen_diff < 0:
@@ -642,8 +648,8 @@ class IPv4(BaseIP):
                     new_prefixlen, str(self)))
 
         first = IPv4(
-            self._string_from_ip_int(self.network) + '/' + str(self.prefixlen +
-                                                         prefixlen_diff))
+            self._string_from_ip_int(self.network) + '/' +
+            str(self._prefixlen + prefixlen_diff))
         subnets = [first]
         current = first
         while True:
@@ -889,7 +895,7 @@ class IPv6(BaseIP):
         # Efficient constructor from integer.
         if isinstance(ipaddr, long) or isinstance(ipaddr, int):
             self.ip = ipaddr
-            self.prefixlen = 128
+            self._prefixlen = 128
             self.netmask = self._ALL_ONES
             if ipaddr < 0 or ipaddr > self._ALL_ONES:
                 raise IPv6IpValidationError(ipaddr)
@@ -903,13 +909,13 @@ class IPv6(BaseIP):
         addr = addr_str.split('/')
         if len(addr) > 1:
             if self._is_valid_netmask(addr[1]):
-                self.prefixlen = int(addr[1])
+                self._prefixlen = int(addr[1])
             else:
                 raise IPv6NetmaskValidationError(addr[1])
         else:
-            self.prefixlen = 128
+            self._prefixlen = 128
 
-        self.netmask = self._ip_int_from_prefix(self.prefixlen)
+        self.netmask = self._ip_int_from_prefix(self._prefixlen)
 
         if not self._is_valid_ip(addr[0]):
             raise IPv6IpValidationError(addr[0])
@@ -933,17 +939,19 @@ class IPv6(BaseIP):
         """
         if not 0 <= prefixlen <= 128:
             raise IPv6NetmaskValidationError(prefixlen)
-        self.prefixlen = prefixlen
+        self._prefixlen = prefixlen
         self.netmask = self._ip_int_from_prefix(self.prefixlen)
 
     # backwards compatibility
     SetPrefix = set_prefix
 
+    prefixlen = property(fget=BaseIP.get_prefix, fset=set_prefix)
+
     def subnet(self, prefixlen_diff=1):
         """The subnets which join to make the current subnet.
 
         In the case that self contains only one IP
-        (self.prefixlen == 128), return a list with just ourself.
+        (self._prefixlen == 128), return a list with just ourself.
 
         Args:
             prefixlen_diff: An integer, the amount the prefix length
@@ -970,8 +978,8 @@ class IPv6(BaseIP):
                 'Prefix length diff %d is invalid for netblock %s' % (
                 new_prefixlen, str(self)))
         first = IPv6(
-            self._string_from_ip_int(self.network) + '/' + str(self.prefixlen +
-                                                               prefixlen_diff))
+            self._string_from_ip_int(self.network) + '/' +
+            str(self._prefixlen + prefixlen_diff))
         subnets = [first]
         current = first
         while True:
@@ -1001,7 +1009,7 @@ class IPv6(BaseIP):
 
         Raises:
             PrefixlenDiffInvalidError: If
-              self.prefixlen - prefixlen_diff < 0. I.e., you have a
+              self._prefixlen - prefixlen_diff < 0. I.e., you have a
               negative prefix length.
 
         """
