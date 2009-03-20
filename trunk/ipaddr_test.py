@@ -36,12 +36,33 @@ class IpaddrUnitTest(unittest.TestCase):
     def testInvalidStrings(self):
         self.assertRaises(ValueError, ipaddr.IP, '')
         self.assertRaises(ValueError, ipaddr.IP, 'www.google.com')
+        self.assertRaises(ValueError, ipaddr.IP, '1.2.3')
+        self.assertRaises(ValueError, ipaddr.IP, '1.2.3.4.5')
+        self.assertRaises(ValueError, ipaddr.IP, '301.2.2.2')
+        self.assertRaises(ValueError, ipaddr.IP, '1:2:3:4:5:6:7')
+        self.assertRaises(ValueError, ipaddr.IP, '1:2:3:4:5:6:7:')
+        self.assertRaises(ValueError, ipaddr.IP, ':2:3:4:5:6:7:8')
+        self.assertRaises(ValueError, ipaddr.IP, '1:2:3:4:5:6:7:8:9')
+        self.assertRaises(ValueError, ipaddr.IP, '1:2:3:4:5:6:7:8:')
+        self.assertRaises(ValueError, ipaddr.IP, '1::3:4:5:6::8')
+        self.assertRaises(ValueError, ipaddr.IP, 'a:')
+        self.assertRaises(ValueError, ipaddr.IP, ':')
+        self.assertRaises(ValueError, ipaddr.IP, ':::')
+        self.assertRaises(ValueError, ipaddr.IP, '::a:')
+        self.assertRaises(ValueError, ipaddr.IP, '1ffff::')
+        self.assertRaises(ValueError, ipaddr.IP, '0xa::')
+        self.assertRaises(ValueError, ipaddr.IP, '1:2:3:4:5:6:1a.2.3.4')
+        self.assertRaises(ValueError, ipaddr.IP, '1:2:3:4:5:1.2.3.4:8')
         self.assertRaises(ipaddr.IPv4IpValidationError, ipaddr.IPv4, '')
         self.assertRaises(ipaddr.IPv4IpValidationError, ipaddr.IPv4,
                           'google.com')
+        self.assertRaises(ipaddr.IPv4IpValidationError, ipaddr.IPv4,
+                          '::1.2.3.4')
         self.assertRaises(ipaddr.IPv6IpValidationError, ipaddr.IPv6, '')
         self.assertRaises(ipaddr.IPv6IpValidationError, ipaddr.IPv6,
                           'google.com')
+        self.assertRaises(ipaddr.IPv6IpValidationError, ipaddr.IPv6,
+                          '1.2.3.4')
 
     def testGetNetwork(self):
         self.assertEqual(self.ipv4.network, 16909056)

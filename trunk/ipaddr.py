@@ -817,7 +817,10 @@ class IPv4(BaseIP):
             return False
 
         for octet in octets:
-            if not 0 <= int(octet) <= 255:
+            try:
+                if not 0 <= int(octet) <= 255:
+                    return False
+            except ValueError:
                 return False
         return True
 
@@ -1092,6 +1095,15 @@ class IPv6(BaseIP):
 
         # We can only have one '::' shortener.
         if ip_str.count('::') > 1:
+            return False
+
+        # '::' should be encompassed by start, digits or end.
+        if ':::' in ip_str:
+            return False
+
+        # A single colon can neither start nor end an address.
+        if ((ip_str.startswith(':') and not ip_str.startswith('::')) or
+                (ip_str.endswith(':') and not ip_str.endswith('::'))):
             return False
 
         # If we have no concatenation, we need to have 8 fields with 7 ':'.
