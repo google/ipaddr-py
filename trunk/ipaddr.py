@@ -112,24 +112,15 @@ def IP(ipaddr):
           address.
 
     """
-    force_v4 = False
-    try:
-        if int(ipaddr) < 2**32:
-            force_v4 = True
-    except (TypeError, ValueError):
-        pass
-
-    # Try v6 first because of the confusing nature of v4 in mapped in v6
-    # addresses.
-    if not force_v4:
-        try:
-            return IPv6(ipaddr)
-        except (IPv6IpValidationError, IPv6NetmaskValidationError):
-            pass
-
+    
     try:
         return IPv4(ipaddr)
     except (IPv4IpValidationError, IPv4NetmaskValidationError):
+        pass
+
+    try:
+        return IPv6(ipaddr)
+    except (IPv6IpValidationError, IPv6NetmaskValidationError):
         pass
 
     raise ValueError('%r does not appear to be an IPv4 or IPv6 address' %
