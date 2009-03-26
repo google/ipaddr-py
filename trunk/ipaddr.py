@@ -188,7 +188,7 @@ def collapse_address_list(addresses):
 
     """
     return _collapse_address_list_recursive(
-        sorted(addresses,cmp=BaseIP.compare_networks))
+        sorted(addresses, key=BaseIP.networks_key))
 
 # backwards compatibility
 CollapseAddrList = collapse_address_list
@@ -212,34 +212,59 @@ class BaseIP(object):
                 raise IndexError
             return self._string_from_ip_int(self.broadcast + n)
 
+    def __lt__(self, other):
+        try:
+            return (self.version < other.version
+                    or self.ip < other.ip
+                    or self.netmask < other.netmask)
+        except AttributeError:
+            return NotImplemented
+
+    def __gt__(self, other):
+        try:
+            return (self.version > other.version
+                    or self.ip > other.ip
+                    or self.netmask > other.netmask)
+        except AttributeError:
+            return NotImplemented
+
     def __eq__(self, other):
         try:
-            if self.version != other.version:
-                return False
+            return (self.version == other.version
+                    and self.ip == other.ip
+                    and self.netmask == other.netmask)
         except AttributeError:
-            raise NotImplementedError('%s is not an IP address' % repr(other))
-        return self.ip == other.ip and self.netmask == other.netmask
+            return NotImplemented
 
     def __ne__(self, other):
-        return not self.__eq__(other)
+        eq = self.__eq__(other)
+        if eq is NotImplemented:
+            return NotImplemented
+        return not eq
 
-    def __cmp__(self, other):
-        try:
-            return (cmp(self.version, other.version) or
-                    cmp(self.ip, other.ip) or
-                    cmp(self.prefixlen, other.prefixlen) or
-                    0)
-        except AttributeError:
-            return super(BaseIP, self).__cmp__(other)
+    def __le__(self, other):
+        gt = self.__gt__(other)
+        if gt is NotImplemented:
+            return NotImplemented
+        return not gt
+
+    def __ge__(self, other):
+        lt = self.__lt__(other)
+        if lt is NotImplemented:
+            return NotImplemented
+        return not lt
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, str(self))
+
+    def __index__(self):
+        return self.ip
 
     def __int__(self):
         return self.ip
 
     def __hex__(self):
-        return hex(self.ip)
+        return hex(int(self))
 
     def address_exclude(self, other):
         """Remove an address from a larger block.
@@ -314,7 +339,7 @@ class BaseIP(object):
                                           's1: %s s2: %s other: %s' %
                                           (str(s1), str(s2), str(other)))
 
-        return sorted(ret_addrs, cmp=BaseIP.compare_networks)
+        return sorted(ret_addrs, key=BaseIP.networks_key)
 
     # backwards compatibility
     AddressExclude = address_exclude
@@ -353,9 +378,11 @@ class BaseIP(object):
               eg: IPv6('::1/128') > IPv4('255.255.255.0/24')
 
         """
-        if self.version != other.version:
-            return cmp(self.version, other.version)
-
+        if self.version < other.version:
+            return -1
+        if self.version > other.version:
+            return 1
+        # self.version == other.version below here:
         if self.network < other.network:
             return -1
         if self.network > other.network:
@@ -370,6 +397,16 @@ class BaseIP(object):
 
     # backwards compatibility
     CompareNetworks = compare_networks
+
+    def networks_key(self):
+        """Network-only key function.
+
+        Returns an object that identifies this address' network and
+        netmask. This function is a suitable "key" argument for sorted()
+        and list.sort().
+
+        """
+        return self.version * 2**160 + self.network * 2**32 + self.netmask
 
     def get_prefix(self):
         """Return the current prefix length."""

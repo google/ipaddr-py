@@ -254,16 +254,44 @@ class IpaddrUnitTest(unittest.TestCase):
                          '2001:658:22a:cafe::5')
 
     def testEquals(self):
-        self.assertTrue(self.ipv4.__eq__(ipaddr.IPv4('1.2.3.4/24')))
-        self.assertFalse(self.ipv4.__eq__(ipaddr.IPv4('1.2.3.4/23')))
-        self.assertFalse(self.ipv4.__eq__(ipaddr.IPv4('1.2.3.5/24')))
+        self.assertTrue(self.ipv4 == ipaddr.IPv4('1.2.3.4/24'))
+        self.assertFalse(self.ipv4 == ipaddr.IPv4('1.2.3.4/23'))
+        self.assertFalse(self.ipv4 == ipaddr.IPv4('1.2.3.5/24'))
+        self.assertFalse(self.ipv4 == ipaddr.IPv6('::1.2.3.4/24'))
+        self.assertFalse(self.ipv4 == '')
+        self.assertFalse(self.ipv4 == [])
+        self.assertFalse(self.ipv4 == 2)
 
-        self.assertTrue(self.ipv6.__eq__(
-            ipaddr.IPv6('2001:658:22a:cafe:200::1/64')))
-        self.assertFalse(self.ipv6.__eq__(
-            ipaddr.IPv6('2001:658:22a:cafe:200::1/63')))
-        self.assertFalse(self.ipv6.__eq__(
-            ipaddr.IPv6('2001:658:22a:cafe:200::2/64')))
+        self.assertTrue(self.ipv6 == 
+            ipaddr.IPv6('2001:658:22a:cafe:200::1/64'))
+        self.assertFalse(self.ipv6 == 
+            ipaddr.IPv6('2001:658:22a:cafe:200::1/63'))
+        self.assertFalse(self.ipv6 == 
+            ipaddr.IPv6('2001:658:22a:cafe:200::2/64'))
+        self.assertFalse(self.ipv6 == ipaddr.IPv4('1.2.3.4/23'))
+        self.assertFalse(self.ipv6 == '')
+        self.assertFalse(self.ipv6 == [])
+        self.assertFalse(self.ipv6 == 2)
+
+    def testNotEquals(self):
+        self.assertFalse(self.ipv4 != ipaddr.IPv4('1.2.3.4/24'))
+        self.assertTrue(self.ipv4 != ipaddr.IPv4('1.2.3.4/23'))
+        self.assertTrue(self.ipv4 != ipaddr.IPv4('1.2.3.5/24'))
+        self.assertTrue(self.ipv4 != ipaddr.IPv6('::1.2.3.4/24'))
+        self.assertTrue(self.ipv4 != '')
+        self.assertTrue(self.ipv4 != [])
+        self.assertTrue(self.ipv4 != 2)
+
+        self.assertFalse(self.ipv6 != 
+            ipaddr.IPv6('2001:658:22a:cafe:200::1/64'))
+        self.assertTrue(self.ipv6 != 
+            ipaddr.IPv6('2001:658:22a:cafe:200::1/63'))
+        self.assertTrue(self.ipv6 != 
+            ipaddr.IPv6('2001:658:22a:cafe:200::2/64'))
+        self.assertTrue(self.ipv6 != ipaddr.IPv4('1.2.3.4/23'))
+        self.assertTrue(self.ipv6 != '')
+        self.assertTrue(self.ipv6 != [])
+        self.assertTrue(self.ipv6 != 2)
 
     def testSlash32Constructor(self):
         self.assertEquals(str(ipaddr.IPv4('1.2.3.4/255.255.255.255')),
@@ -283,7 +311,6 @@ class IpaddrUnitTest(unittest.TestCase):
         ip4 = ipaddr.IPv4('1.1.3.0/24')
         ip5 = ipaddr.IPv4('1.1.4.0/24')
         # stored in no particular order b/c we want CollapseAddr to call [].sort
-        # and we want that sort to call ipaddr.IP.__cmp__() on our array members
         ip6 = ipaddr.IPv4('1.1.0.0/22')
         # check that addreses are subsumed properlly.
         collapsed = ipaddr.collapse_address_list([ip1, ip2, ip3, ip4, ip5, ip6])
@@ -299,7 +326,7 @@ class IpaddrUnitTest(unittest.TestCase):
         ip1 = ipaddr.IPv6('::2001:1/100')
         ip2 = ipaddr.IPv6('::2002:1/120')
         ip3 = ipaddr.IPv6('::2001:1/96')
-        # test that ipv6 addresses are subsumed properlly.
+        # test that ipv6 addresses are subsumed properly.
         collapsed = ipaddr.collapse_address_list([ip1, ip2, ip3])
         self.assertEqual(collapsed, [ip3])
 
@@ -309,24 +336,30 @@ class IpaddrUnitTest(unittest.TestCase):
         ip2 = ipaddr.IPv4('1.1.1.1/24')
         ip3 = ipaddr.IPv4('1.1.2.0/24')
 
-        self.assertEquals(ip1.__cmp__(ip3), -1)
-        self.assertEquals(ip3.__cmp__(ip2), 1)
+        self.assertTrue(ip1 < ip3)
+        self.assertTrue(ip3 > ip2)
 
         self.assertEquals(ip1.compare_networks(ip2), 0)
+        self.assertTrue(ip1.networks_key() == ip2.networks_key())
+        self.assertEquals(ip1.compare_networks(ip3), -1)
+        self.assertTrue(ip1.networks_key() < ip3.networks_key())
 
         ip1 = ipaddr.IPv6('2001::2000/96')
         ip2 = ipaddr.IPv6('2001::2001/96')
         ip3 = ipaddr.IPv6('2001:ffff::2000/96')
 
-        self.assertEquals(ip1.__cmp__(ip3), -1)
-        self.assertEquals(ip3.__cmp__(ip2), 1)
+        self.assertTrue(ip1 < ip3)
+        self.assertTrue(ip3 > ip2)
         self.assertEquals(ip1.compare_networks(ip2), 0)
+        self.assertTrue(ip1.networks_key() == ip2.networks_key())
+        self.assertEquals(ip1.compare_networks(ip3), -1)
+        self.assertTrue(ip1.networks_key() < ip3.networks_key())
 
         # Test comparing different protocols
         ipv6 = ipaddr.IPv6('::/0')
         ipv4 = ipaddr.IPv4('0.0.0.0/0')
-        self.assertEquals(ipv6.__cmp__(ipv4), 1)
-        self.assertEquals(ipv4.__cmp__(ipv6), -1)
+        self.assertTrue(ipv6 > ipv4)
+        self.assertTrue(ipv4 < ipv6)
 
     def testEmbeddedIpv4(self):
         ipv4_string = '192.168.0.1'
@@ -439,14 +472,10 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(42540616829182469433547762482097946625, int(self.ipv6))
 
     def testHexRepresentation(self):
-        self.assertEqual('0x1020304', hex(self.ipv4))
+        self.assertEqual(hex(0x1020304), hex(self.ipv4))
 
-        # Force the return value to uppercase to workaround Python version
-        # differences, i.e.:
-        #   2.4.3: hex(long(10)) == '0xAL'
-        #   2.5.1: hex(long(10)) == '0xaL'
-        self.assertEqual('0X20010658022ACAFE0200000000000001L',
-                         hex(self.ipv6).upper())
+        self.assertEqual(hex(0x20010658022ACAFE0200000000000001),
+                         hex(self.ipv6))
 
 
 if __name__ == '__main__':
