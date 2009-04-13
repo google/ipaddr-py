@@ -23,6 +23,7 @@ and prefixes.
 
 __version__ = '1.0.2'
 
+import struct
 
 class Error(Exception):
 
@@ -192,6 +193,16 @@ def collapse_address_list(addresses):
 
 # backwards compatibility
 CollapseAddrList = collapse_address_list
+
+# Test whether this Python implementation supports byte objects that
+# are not identical to str ones.
+# We need to exclude platforms where bytes == str so that we can
+# distinguish between packed representations and strings, for example
+# b'12::' (the IPv4 address 49.50.58.58) and '12::' (an IPv6 address).
+try:
+    _compat_has_real_bytes = bytes != str
+except NameError: # <Python2.6
+    _compat_has_real_bytes = False
 
 class BaseIP(object):
 
@@ -588,6 +599,14 @@ class IPv4(BaseIP):
                 raise IPv4IpValidationError(ipaddr)
             return
 
+        # Constructing from a packed address
+        if _compat_has_real_bytes:
+            if isinstance(ipaddr, bytes) and len(ipaddr) == 4:
+                self.ip = struct.unpack('!I', ipaddr)[0]
+                self._prefixlen = 32
+                self.netmask = self._ALL_ONES
+                return
+
         # Assume input argument to be string or any object representation
         # which converts into a formatted IP prefix string.
         addr = str(ipaddr).split('/')
@@ -776,6 +795,11 @@ class IPv4(BaseIP):
     def version(self):
         return self._version
 
+    @property
+    def packed(self):
+        """The binary representation of this address."""
+        return struct.pack('!I', self.ip)
+
     def _is_hostmask(self, ip_str):
         """Test if the IP string is a hostmask (rather than a netmask).
 
@@ -932,6 +956,15 @@ class IPv6(BaseIP):
                 raise IPv6IpValidationError(ipaddr)
             return
 
+        # Constructing from a packed address
+        if _compat_has_real_bytes:
+            if isinstance(ipaddr, bytes) and len(ipaddr) == 16:
+                tmp = struct.unpack('!QQ', ipaddr)
+                self.ip = (tmp[0] << 64) | tmp[1]
+                self._prefixlen = 128
+                self.netmask = self._ALL_ONES
+                return
+
         # Assume input argument to be string or any object representation
         # which converts into a formatted IP prefix string.
         addr_str = str(ipaddr)
@@ -1058,6 +1091,11 @@ class IPv6(BaseIP):
     @property
     def version(self):
         return self._version
+
+    @property
+    def packed(self):
+        """The binary representation of this address."""
+        return struct.pack('!QQ', self.ip >> 64, self.ip & (2**64 - 1))
 
     def _is_shorthand_ip(self, ip_str=None):
         """Determine if the address is shortened.
