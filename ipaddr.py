@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
 # Copyright 2007 Google Inc.
+#  Licensed to PSF under a Contributor Agreement.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -189,7 +190,7 @@ def collapse_address_list(addresses):
 
     """
     return _collapse_address_list_recursive(
-        sorted(addresses, key=BaseIP.networks_key))
+        sorted(addresses, key=BaseIP._get_networks_key))
 
 # backwards compatibility
 CollapseAddrList = collapse_address_list
@@ -350,10 +351,7 @@ class BaseIP(object):
                                           's1: %s s2: %s other: %s' %
                                           (str(s1), str(s2), str(other)))
 
-        return sorted(ret_addrs, key=BaseIP.networks_key)
-
-    # backwards compatibility
-    AddressExclude = address_exclude
+        return sorted(ret_addrs, key=BaseIP._get_networks_key)
 
     def compare_networks(self, other):
         """Compare two IP objects.
@@ -406,10 +404,7 @@ class BaseIP(object):
         # self.network == other.network and self.netmask == other.netmask
         return 0
 
-    # backwards compatibility
-    CompareNetworks = compare_networks
-
-    def networks_key(self):
+    def _get_networks_key(self):
         """Network-only key function.
 
         Returns an object that identifies this address' network and
@@ -417,11 +412,11 @@ class BaseIP(object):
         and list.sort().
 
         """
-        return self.version * 2**160 + self.network * 2**32 + self.netmask
+        return (self.version, self.network, self.netmask)
 
-    def get_prefix(self):
-        """Return the current prefix length."""
-        return self._prefixlen
+    prefixlen = property(
+        fget=lambda self: self._prefixlen,
+        fset=lambda self, prefixlen: self._set_prefix(prefixlen))
 
     def __str__(self):
         return  '%s/%s' % (self._string_from_ip_int(self.ip),
@@ -433,9 +428,6 @@ class BaseIP(object):
     def __contains__(self, other):
         return self.network <= other.ip and self.broadcast >= other.broadcast
 
-    # backwards compatibility
-    Contains = __contains__
-
     @property
     def ip_ext(self):
         """Dotted decimal or colon string version of the IP address."""
@@ -443,6 +435,7 @@ class BaseIP(object):
 
     @property
     def ip_ext_full(self):
+        """Canonical string version of the IP address."""
         return self.ip_ext
 
     @property
@@ -536,6 +529,14 @@ class BaseIP(object):
             prefixlen = self.prefixlen
         return self._string_from_ip_int(self._ip_int_from_prefix(prefixlen))
 
+    # backwards compatibility
+    AddressExclude = address_exclude
+    CompareNetworks = compare_networks
+    Contains = __contains__
+    def set_prefix(self, prefixlen): self.prefixlen = prefixlen
+    SetPrefix = set_prefix
+    def get_prefix(self): return self.prefixlen
+    
 
 class IPv4(BaseIP):
 
@@ -641,7 +642,7 @@ class IPv4(BaseIP):
             self._prefixlen = 32
             self.netmask = self._ip_int_from_prefix(self._prefixlen)
 
-    def set_prefix(self, prefixlen):
+    def _set_prefix(self, prefixlen):
         """Change the prefix length.
 
         Args:
@@ -655,11 +656,6 @@ class IPv4(BaseIP):
             raise IPv4NetmaskValidationError(prefixlen)
         self._prefixlen = prefixlen
         self.netmask = self._ip_int_from_prefix(self._prefixlen)
-
-    # backwards compatibility
-    SetPrefix = set_prefix
-
-    prefixlen = property(fget=BaseIP.get_prefix, fset=set_prefix)
 
     def subnet(self, prefixlen_diff=1):
         """The subnets which join to make the current subnet.
@@ -709,9 +705,6 @@ class IPv4(BaseIP):
 
         return subnets
 
-    # backwards compatibility
-    Subnet = subnet
-
     def supernet(self, prefixlen_diff=1):
         """The supernet containing the current network.
 
@@ -738,58 +731,48 @@ class IPv4(BaseIP):
                 (self.prefixlen, prefixlen_diff))
         return IPv4(self.ip_ext + '/' + str(self.prefixlen - prefixlen_diff))
 
-    # backwards compatibility
-    Supernet = supernet
-
-    def is_rfc1918(self):
-        """Test if the IPv4 address is reserved per RFC1918.
+    @property
+    def is_private(self):
+        """Test if this address is allocated for private networks.
 
         Returns:
-            A boolean, True if the address is reserved.
+            A boolean, True if the address is reserved per RFC 1918.
 
         """
         return (self in IPv4('10.0.0.0/8') or
                 self in IPv4('172.16.0.0/12') or
                 self in IPv4('192.168.0.0/16'))
 
-    # backwards compatibility
-    IsRFC1918 = is_rfc1918
-
+    @property
     def is_multicast(self):
         """Test if the address is reserved for multicast use.
 
         Returns:
             A boolean, True if the address is multicast.
+            See RFC 3171 for details.
 
         """
         return self in IPv4('224.0.0.0/4')
 
-    # backwards compatibility
-    IsMulticast = is_multicast
-
+    @property
     def is_loopback(self):
         """Test if the address is a loopback adddress.
 
         Returns:
-            A boolean, True if the address is a loopback.
+            A boolean, True if the address is a loopback per RFC 3330.
 
         """
         return self in IPv4('127.0.0.0/8')
 
-    # backwards compatibility
-    IsLoopback = is_loopback
-
+    @property
     def is_link_local(self):
         """Test if the address is reserved for link-local.
 
         Returns:
-            A boolean, True if the address is link-local.
+            A boolean, True if the address is link-local per RFC 3927.
 
         """
         return self in IPv4('169.254.0.0/16')
-
-    # backwards compatibility
-    IsLinkLocal = is_link_local
 
     @property
     def version(self):
@@ -896,6 +879,13 @@ class IPv4(BaseIP):
             return False
         return 0 <= netmask <= 32
 
+    # backwards compatibility
+    Subnet = subnet
+    Supernet = supernet
+    IsRFC1918 = lambda self: self.is_private
+    IsMulticast = lambda self: self.is_multicast
+    IsLoopback = lambda self: self.is_loopback
+    IsLinkLocal = lambda self: self.is_link_local
 
 class IPv6(BaseIP):
 
@@ -991,7 +981,7 @@ class IPv6(BaseIP):
         """Returns the expanded version of the IPv6 string."""
         return self._explode_shorthand_ip_string(self.ip_ext)
 
-    def set_prefix(self, prefixlen):
+    def _set_prefix(self, prefixlen):
         """Change the prefix length.
 
         Args:
@@ -1005,11 +995,6 @@ class IPv6(BaseIP):
             raise IPv6NetmaskValidationError(prefixlen)
         self._prefixlen = prefixlen
         self.netmask = self._ip_int_from_prefix(self.prefixlen)
-
-    # backwards compatibility
-    SetPrefix = set_prefix
-
-    prefixlen = property(fget=BaseIP.get_prefix, fset=set_prefix)
 
     def subnet(self, prefixlen_diff=1):
         """The subnets which join to make the current subnet.
@@ -1056,9 +1041,6 @@ class IPv6(BaseIP):
 
         return subnets
 
-    # backwards compatibility
-    Subnet = subnet
-
     def supernet(self, prefixlen_diff=1):
         """The supernet containing the current network.
 
@@ -1085,8 +1067,72 @@ class IPv6(BaseIP):
                 (self.prefixlen, prefixlen_diff))
         return IPv6(self.ip_ext + '/' + str(self.prefixlen - prefixlen_diff))
 
-    # backwards compatibility
-    Supernet = supernet
+    @property
+    def is_multicast(self):
+        """Test if the address is reserved for multicast use.
+
+        Returns:
+            A boolean, True if the address is a multicast address.
+            See RFC 2373 2.7 for details.
+
+        """
+        return self in IPv6('ff00::/8')
+
+    @property
+    def is_unspecified(self):
+        """Test if the address is unspecified.
+
+        Returns:
+            A boolean, True if this is the unspecified address as defined in
+            RFC 2373 2.5.2.
+
+        """
+        return self == IPv6('::')
+
+    @property
+    def is_loopback(self):
+        """Test if the address is a loopback adddress.
+
+        Returns:
+            A boolean, True if the address is a loopback address as defined in
+            RFC 2373 2.5.3.
+
+        """
+        return self == IPv6('::1')
+
+    @property
+    def is_link_local(self):
+        """Test if the address is reserved for link-local.
+
+        Returns:
+            A boolean, True if the address is reserved per RFC 4291.
+
+        """
+        return self in IPv6('fe80::/10')
+
+    @property
+    def is_site_local(self):
+        """Test if the address is reserved for site-local.
+
+        Note that the site-local address space has been deprecated by RFC 3879.
+        Use is_private to test if this address is in the space of unique local
+        addresses as defined by RFC 4193.
+
+        Returns:
+            A boolean, True if the address is reserved per RFC 3513 2.5.6.
+
+        """
+        return self in IPv6('fec0::/10')
+
+    @property
+    def is_private(self):
+        """Test if this address is allocated for private networks.
+
+        Returns:
+            A boolean, True if the address is reserved per RFC 4193.
+
+        """
+        return self in IPv6('fc00::/7')
 
     @property
     def version(self):
@@ -1333,3 +1379,7 @@ class IPv6(BaseIP):
 
         """
         return self.prefixlen
+
+    # backwards compatibility
+    Subnet = subnet
+    Supernet = supernet

@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
 # Copyright 2007 Google Inc.
+#  Licensed to PSF under a Contributor Agreement.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -366,9 +367,9 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertTrue(ip3 > ip2)
 
         self.assertEquals(ip1.compare_networks(ip2), 0)
-        self.assertTrue(ip1.networks_key() == ip2.networks_key())
+        self.assertTrue(ip1._get_networks_key() == ip2._get_networks_key())
         self.assertEquals(ip1.compare_networks(ip3), -1)
-        self.assertTrue(ip1.networks_key() < ip3.networks_key())
+        self.assertTrue(ip1._get_networks_key() < ip3._get_networks_key())
 
         ip1 = ipaddr.IPv6('2001::2000/96')
         ip2 = ipaddr.IPv6('2001::2001/96')
@@ -377,9 +378,9 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertTrue(ip1 < ip3)
         self.assertTrue(ip3 > ip2)
         self.assertEquals(ip1.compare_networks(ip2), 0)
-        self.assertTrue(ip1.networks_key() == ip2.networks_key())
+        self.assertTrue(ip1._get_networks_key() == ip2._get_networks_key())
         self.assertEquals(ip1.compare_networks(ip3), -1)
-        self.assertTrue(ip1.networks_key() < ip3.networks_key())
+        self.assertTrue(ip1._get_networks_key() < ip3._get_networks_key())
 
         # Test comparing different protocols
         ipv6 = ipaddr.IPv6('::/0')
@@ -426,11 +427,55 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEquals(ipaddr.IPv4, type(ipv4))
         self.assertEquals(ipaddr.IPv6, type(ipv6))
 
-    def testReserved(self):
-        self.assertEquals(True, ipaddr.IP('224.1.1.1/31').is_multicast())
-        self.assertEquals(True, ipaddr.IP('192.168.1.1/17').is_rfc1918())
-        self.assertEquals(True, ipaddr.IP('169.254.100.200/24').is_link_local())
-        self.assertEquals(True, ipaddr.IP('127.100.200.254/32').is_loopback())
+    def testReservedIpv4(self):
+        self.assertEquals(True, ipaddr.IP('224.1.1.1/31').is_multicast)
+        self.assertEquals(False, ipaddr.IP('240.0.0.0').is_multicast)
+
+        self.assertEquals(True, ipaddr.IP('192.168.1.1/17').is_private)
+        self.assertEquals(False, ipaddr.IP('192.169.0.0').is_private)
+        self.assertEquals(True, ipaddr.IP('10.255.255.255').is_private)
+        self.assertEquals(False, ipaddr.IP('11.0.0.0').is_private)
+        self.assertEquals(True, ipaddr.IP('172.31.255.255').is_private)
+        self.assertEquals(False, ipaddr.IP('172.32.0.0').is_private)
+
+        self.assertEquals(True, ipaddr.IP('169.254.100.200/24').is_link_local)
+        self.assertEquals(False, ipaddr.IP('169.255.100.200/24').is_link_local)
+
+        self.assertEquals(True, ipaddr.IP('127.100.200.254/32').is_loopback)
+        self.assertEquals(True, ipaddr.IP('127.42.0.0/16').is_loopback)
+        self.assertEquals(False, ipaddr.IP('128.0.0.0').is_loopback)
+
+    def testReservedIpv6(self):
+        ip = ipaddr.IP
+        
+        self.assertEquals(True, ip('ffff::').is_multicast)
+        self.assertEquals(True, ip(2**128-1).is_multicast)
+        self.assertEquals(True, ip('ff00::').is_multicast)
+        self.assertEquals(False, ip('fdff::').is_multicast)
+
+        self.assertEquals(True, ip('fecf::').is_site_local)
+        self.assertEquals(True, ip('feff:ffff:ffff:ffff::').is_site_local)
+        self.assertEquals(False, ip('fbf:ffff::').is_site_local)
+        self.assertEquals(False, ip('ff00::').is_site_local)
+
+        self.assertEquals(True, ip('fc00::').is_private)
+        self.assertEquals(True, ip('fc00:ffff:ffff:ffff::').is_private)
+        self.assertEquals(False, ip('fbff:ffff::').is_private)
+        self.assertEquals(False, ip('fe00::').is_private)
+
+        self.assertEquals(True, ip('fea0::').is_link_local)
+        self.assertEquals(True, ip('febf:ffff::').is_link_local)
+        self.assertEquals(False, ip('fe7f:ffff::').is_link_local)
+        self.assertEquals(False, ip('fec0::').is_link_local)
+
+        self.assertEquals(True, ip('0:0::0:01').is_loopback)
+        self.assertEquals(False, ip('::1/127').is_loopback)
+        self.assertEquals(False, ip('::').is_loopback)
+        self.assertEquals(False, ip('::2').is_loopback)
+
+        self.assertEquals(True, ip('0::0').is_unspecified)
+        self.assertEquals(False, ip('::1').is_unspecified)
+        self.assertEquals(False, ip('::/127').is_unspecified)
 
     def testAddrExclude(self):
         addr1 = ipaddr.IP('10.1.1.0/24')
@@ -447,7 +492,7 @@ class IpaddrUnitTest(unittest.TestCase):
         dummy = {}
         dummy[self.ipv4] = None
         dummy[self.ipv6] = None
-        self.assertTrue(dummy.has_key(self.ipv4))
+        self.assertTrue(self.ipv4 in dummy)
 
     def testIPv4PrefixFromInt(self):
         addr1 = ipaddr.IP('10.1.1.0/24')
@@ -516,6 +561,41 @@ class IpaddrUnitTest(unittest.TestCase):
 
         self.assertEqual(hex(0x20010658022ACAFE0200000000000001),
                          hex(self.ipv6))
+
+    # backwards compatibility
+    def testBackwardsCompability(self):
+        ip = ipaddr.IP
+
+        self.assertEqual(ipaddr.CollapseAddrList(
+                            [ip('1.1.0.0/24'), ip('1.1.1.0/24')]),
+                         [ip('1.1.0.0/23')])
+
+        self.assertEqual(ip('::42:0/112').AddressExclude(ip('::42:8000/113')),
+                         [ip('::42:0/113')])
+
+        self.assertTrue(ip('1::/8').CompareNetworks(ip('2::/9')) < 0)
+
+        self.assertEqual(ip('1::/16').Contains(ip('2::/16')), False)
+
+        i4 = ip('1.2.3.1/12')
+        i4.set_prefix(0)
+        self.assertEqual(i4.get_prefix(), 0)
+
+        i6 = ip('::1/2')
+        i6.set_prefix(0)
+        self.assertEqual(i6.get_prefix(), 0)
+
+        self.assertEqual(ip('0.0.0.0/0').Subnet(),
+                         [ip('0.0.0.0/1'), ip('128.0.0.0/1')])
+        self.assertEqual(ip('::/127').Subnet(), [ip('::/128'), ip('::1/128')])
+
+        self.assertEqual(ip('1.0.0.0/32').Supernet(), ip('1.0.0.0/31'))
+        self.assertEqual(ip('::/121').Supernet(), ip('::/120'))
+
+        self.assertEqual(ip('10.0.0.02').IsRFC1918(), True)
+        self.assertEqual(ip('10.0.0.0').IsMulticast(), False)
+        self.assertEqual(ip('127.255.255.255').IsLoopback(), True)
+        self.assertEqual(ip('169.255.255.255').IsLinkLocal(), False)
 
 if __name__ == '__main__':
     unittest.main()
