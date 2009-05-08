@@ -114,7 +114,7 @@ def IP(ipaddr):
           address.
 
     """
-    
+
     try:
         return IPv4(ipaddr)
     except (IPv4IpValidationError, IPv4NetmaskValidationError):
@@ -536,7 +536,7 @@ class BaseIP(object):
     def set_prefix(self, prefixlen): self.prefixlen = prefixlen
     SetPrefix = set_prefix
     def get_prefix(self): return self.prefixlen
-    
+
 
 class IPv4(BaseIP):
 
