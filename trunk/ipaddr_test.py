@@ -289,11 +289,11 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertFalse(self.ipv4 == [])
         self.assertFalse(self.ipv4 == 2)
 
-        self.assertTrue(self.ipv6 == 
+        self.assertTrue(self.ipv6 ==
             ipaddr.IPv6('2001:658:22a:cafe:200::1/64'))
-        self.assertFalse(self.ipv6 == 
+        self.assertFalse(self.ipv6 ==
             ipaddr.IPv6('2001:658:22a:cafe:200::1/63'))
-        self.assertFalse(self.ipv6 == 
+        self.assertFalse(self.ipv6 ==
             ipaddr.IPv6('2001:658:22a:cafe:200::2/64'))
         self.assertFalse(self.ipv6 == ipaddr.IPv4('1.2.3.4/23'))
         self.assertFalse(self.ipv6 == '')
@@ -309,11 +309,11 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertTrue(self.ipv4 != [])
         self.assertTrue(self.ipv4 != 2)
 
-        self.assertFalse(self.ipv6 != 
+        self.assertFalse(self.ipv6 !=
             ipaddr.IPv6('2001:658:22a:cafe:200::1/64'))
-        self.assertTrue(self.ipv6 != 
+        self.assertTrue(self.ipv6 !=
             ipaddr.IPv6('2001:658:22a:cafe:200::1/63'))
-        self.assertTrue(self.ipv6 != 
+        self.assertTrue(self.ipv6 !=
             ipaddr.IPv6('2001:658:22a:cafe:200::2/64'))
         self.assertTrue(self.ipv6 != ipaddr.IPv4('1.2.3.4/23'))
         self.assertTrue(self.ipv6 != '')
@@ -447,7 +447,7 @@ class IpaddrUnitTest(unittest.TestCase):
 
     def testReservedIpv6(self):
         ip = ipaddr.IP
-        
+
         self.assertEquals(True, ip('ffff::').is_multicast)
         self.assertEquals(True, ip(2**128-1).is_multicast)
         self.assertEquals(True, ip('ff00::').is_multicast)
