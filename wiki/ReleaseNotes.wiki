@@ -4,6 +4,21 @@
 
 Here are the visible changes for each release.
 
+== 1.1.0 ==
+
+`ipaddr.py` is now part of the standard library in Python 2.7 and 3.1!  This release is compatible with the `ipaddr` from future versions of Python.
+
+Special thanks to Philipp Hagemeister for making most of the improvements to this release, and to Gregory P. Smith for shepherding this into the Python standard library.
+
+  * r59 Method names are now PEP-8 compliant, instead of Google-style camel case.  The old method names remain, but are deprecated; you should use the lowercase names to be compatible with Python 2.7/3.1. (pmoody)
+  * r63 .prefixlen is now a property. (pmoody)
+  * r64 Stronger validation. (Philipp Hagemeister)
+  * r65 1.2.3.4 is not a valid v6 address, so we can simplify the constructor. (Philipp Hagemeister)
+  * r66 Expand rich comparison operations and their tests, with a goal of supporting 2to3.  Add a new method .networks_key().  Add a new script to run through 2to3 and make sure tests pass under Python 3 with the converted version. (Philipp Hagemeister)
+  * r68 New method .packed(). (Philipp Hagemeister)
+  * r69 Add `is_multicast`, `is_unspecified`, `is_loopback`, `is_link_local`, `is_site_local`, and `is_private` for IPv6. Make more methods into properties. Improved documentation and tests for `is_*` properties for IPv4 and IPv6. Rename `networks_key()` to `_get_networks_key()`.
+  * r71 Fix off-by-one bug (issue 15). (gpsmith)
+
 == 1.0.2 ==
   * r52 Force the return value in testHexRepresentation to uppercase to workaround Python version. (smart)
   * r51 Fix testHexRepresentation().  Hex representations of longs are uppercase. (smart)
