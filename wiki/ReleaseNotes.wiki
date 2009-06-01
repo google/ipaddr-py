@@ -4,6 +4,12 @@
 
 Here are the visible changes for each release.
 
+== 1.1.1 ==
+
+This release contains a single important bugfix.  All users of 1.1.0 should upgrade.
+
+  * r77 A logical error caused ordering operators to behave incorrectly.
+
 == 1.1.0 ==
 
 `ipaddr.py` is now part of the standard library in Python 2.7 and 3.1!  This release is compatible with the `ipaddr` from future versions of Python.
