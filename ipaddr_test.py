@@ -399,6 +399,21 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertTrue(ipv6 > ipv4)
         self.assertTrue(ipv4 < ipv6)
 
+        # Regression test for issue 19.
+        ip1 = ipaddr.IP('10.1.2.128/25')
+        self.assertFalse(ip1 < ip1)
+        self.assertFalse(ip1 > ip1)
+        ip2 = ipaddr.IP('10.1.3.0/24')
+        self.assertTrue(ip1 < ip2)
+        self.assertFalse(ip2 < ip1)
+        self.assertFalse(ip1 > ip2)
+        self.assertTrue(ip2 > ip1)
+        ip3 = ipaddr.IP('10.1.3.0/25')
+        self.assertTrue(ip2 < ip3)
+        self.assertFalse(ip3 < ip2)
+        self.assertFalse(ip2 > ip3)
+        self.assertTrue(ip3 > ip2)
+
     def testEmbeddedIpv4(self):
         ipv4_string = '192.168.0.1'
         ipv4 = ipaddr.IPv4(ipv4_string)
