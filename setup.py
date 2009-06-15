@@ -24,6 +24,7 @@ setup(name='ipaddr',
       maintainer_email='ipaddr-py-dev@googlegroups.com',
       version=ipaddr.__version__,
       url='http://code.google.com/p/ipaddr-py/',
+      license='Apache License, Version 2.0',
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',
