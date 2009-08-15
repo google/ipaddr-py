@@ -406,10 +406,10 @@ class BaseNet(IPAddrBase):
 
     def __contains__(self, other):
         # Easy case, dealing with networks.
-        if isinstance(other, IPv4Network) or isinstance(other, IPv6Network):
+        if isinstance(other, BaseNet):
             return (int(self.network) <= int(other._ip) and
                     int(self.broadcast) >= int(other.broadcast))
-        elif isinstance(other, IPv4Address) or isinstance(other, IPv6Address):
+        elif isinstance(other, BaseIP):
             # Check if we've got an Address
             return (int(self.network) <= int(other._ip) <=
                     int(self.broadcast))
