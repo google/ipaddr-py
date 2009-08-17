@@ -751,7 +751,7 @@ class BaseV4(object):
         return self._version
 
 
-class IPv4Address(BaseIP, BaseV4):
+class IPv4Address(BaseV4, BaseIP):
 
     """Represent and manipulate single IPv4 Addresses."""
 
