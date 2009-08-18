@@ -1101,20 +1101,6 @@ class IPv4Network(BaseV4, BaseNet):
     IsLinkLocal = lambda self: self.is_link_local
 
 
-class IPv4(object):
-    """Generic IPv4 selector class.
-
-    Return a single IP or a network object based on the kwargs.
-    """
-    def __new__(cls, *args, **kwargs):
-        if not args:
-            return False
-        if kwargs.has_key('host') and kwargs['host']:
-            return IPv4Address(args[0])
-        else:
-            return IPv4Network(args[0])
-
-
 class BaseV6(object):
 
     """Base IPv6 object.
@@ -1664,13 +1650,3 @@ class IPv6Network(BaseV6, BaseNet):
     # backwards compatibility
     Subnet = subnet
     Supernet = supernet
-
-
-class IPv6(object):
-    def __new__(cls, *args, **kwargs):
-        if not args:
-            return False
-        if kwargs.has_key('host') and kwargs['host']:
-            return IPv6Address(args[0])
-        else:
-            return IPv6Network(args[0])
