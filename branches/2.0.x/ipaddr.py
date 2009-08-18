@@ -113,7 +113,7 @@ def IP(address, host=False, version=None):
     """Take an IP string/int and return an object of the correct type.
 
     Args:
-        ip_str: A string or integer, the IP address.  Either IPv4 or
+        address: A string or integer, the IP address.  Either IPv4 or
           IPv6 addresses may be supplied; integers less than 2**32 will
           be considered to be IPv4.
         host: A bool indicating that a host rather than the default network
@@ -148,6 +148,26 @@ def IP(address, host=False, version=None):
 
     raise ValueError('%r does not appear to be an IPv4 or IPv6 address' %
                      address)
+
+
+def IPv4(address, host=False):
+    """Generic IPv4 Factory function..
+
+    Return an IPv4 address or network.
+    """
+    if host:
+        return IPv4Address(address)
+    return IPv4Network(address)
+
+
+def IPv6(address, host=False):
+    """Generic IPv6 Factory function..
+
+    Return an IPv6 address or network.
+    """
+    if host:
+        return IPv6Address(address)
+    return IPv6Network(address)
 
 
 def _collapse_address_list_recursive(addresses):
