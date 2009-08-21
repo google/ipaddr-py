@@ -359,6 +359,30 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEquals(str(ipaddr.IPv4('1.2.3.4/0.0.0.0')), '1.2.3.4/0')
 
     def testCollapsing(self):
+        # test only IP addresses including some duplicates
+        ip1 = ipaddr.IPv4('1.1.1.0', host=True)
+        ip2 = ipaddr.IPv4('1.1.1.1', host=True)
+        ip3 = ipaddr.IPv4('1.1.1.2', host=True)
+        ip4 = ipaddr.IPv4('1.1.1.3', host=True)
+        ip5 = ipaddr.IPv4('1.1.1.4', host=True)
+        ip6 = ipaddr.IPv4('1.1.1.0', host=True)
+        # check that addreses are subsumed properly.
+        collapsed = ipaddr.collapse_address_list([ip1, ip2, ip3, ip4, ip5, ip6])
+        self.assertEqual(collapsed, [ipaddr.IPv4('1.1.1.0/30'),
+                                     ipaddr.IPv4('1.1.1.4/32')])
+
+        # test a mix of IP addresses and networks including some duplicates
+        ip1 = ipaddr.IPv4('1.1.1.0', host=True)
+        ip2 = ipaddr.IPv4('1.1.1.1', host=True)
+        ip3 = ipaddr.IPv4('1.1.1.2', host=True)
+        ip4 = ipaddr.IPv4('1.1.1.3', host=True)
+        ip5 = ipaddr.IPv4('1.1.1.4/30')
+        ip6 = ipaddr.IPv4('1.1.1.4/30')
+        # check that addreses are subsumed properly.
+        collapsed = ipaddr.collapse_address_list([ip5, ip1, ip2, ip3, ip4, ip6])
+        self.assertEqual(collapsed, [ipaddr.IPv4('1.1.1.0/29')])
+
+        # test only IP networks
         ip1 = ipaddr.IPv4('1.1.0.0/24')
         ip2 = ipaddr.IPv4('1.1.1.0/24')
         ip3 = ipaddr.IPv4('1.1.2.0/24')
@@ -366,16 +390,22 @@ class IpaddrUnitTest(unittest.TestCase):
         ip5 = ipaddr.IPv4('1.1.4.0/24')
         # stored in no particular order b/c we want CollapseAddr to call [].sort
         ip6 = ipaddr.IPv4('1.1.0.0/22')
-        # check that addreses are subsumed properlly.
+        # check that addreses are subsumed properly.
         collapsed = ipaddr.collapse_address_list([ip1, ip2, ip3, ip4, ip5, ip6])
         self.assertEqual(collapsed, [ipaddr.IPv4('1.1.0.0/22'),
                                      ipaddr.IPv4('1.1.4.0/24')])
 
-        # test that two addresses are supernet'ed properlly
+        # test that two addresses are supernet'ed properly
         collapsed = ipaddr.collapse_address_list([ip1, ip2])
         self.assertEqual(collapsed, [ipaddr.IPv4('1.1.0.0/23')])
 
+        # test same IP networks
         ip_same1 = ip_same2 = ipaddr.IPv4('1.1.1.1/32')
+        self.assertEqual(ipaddr.collapse_address_list([ip_same1, ip_same2]),
+                         [ip_same1])
+
+        # test same IP addresses
+        ip_same1 = ip_same2 = ipaddr.IPv4('1.1.1.1', host=True)
         self.assertEqual(ipaddr.collapse_address_list([ip_same1, ip_same2]),
                          [ip_same1])
         ip1 = ipaddr.IPv6('::2001:1/100')
@@ -384,6 +414,37 @@ class IpaddrUnitTest(unittest.TestCase):
         # test that ipv6 addresses are subsumed properly.
         collapsed = ipaddr.collapse_address_list([ip1, ip2, ip3])
         self.assertEqual(collapsed, [ip3])
+
+    def testSummarizing(self):
+        ip = ipaddr.IP
+        summarize = ipaddr.summarize_address_range
+        ip1 = ip('1.1.1.0', host=True)
+        ip2 = ip('1.1.1.255', host=True)
+        # test a /24 is sumamrized properly
+        self.assertEqual(summarize(ip1, ip2)[0], ip('1.1.1.0/24'))
+        # test an  IPv4 range that isn't on a network byte boundary
+        ip2 = ip('1.1.1.8', host=True)
+        self.assertEqual(summarize(ip1, ip2), [ip('1.1.1.0/29'), ip('1.1.1.8')])
+
+        ip1 = ip('1::', host=True)
+        ip2 = ip('1:ffff:ffff:ffff:ffff:ffff:ffff:ffff', host=True)
+        # test a IPv6 is sumamrized properly
+        self.assertEqual(summarize(ip1, ip2)[0], ip('1::/16'))
+        # test an IPv6 range that isn't on a network byte boundary
+        ip2 = ip('2::', host=True)
+        self.assertEqual(summarize(ip1, ip2), [ip('1::/16'), ip('2::/128')])
+
+        # test exception raised when first is greater than last
+        self.assertRaises(ValueError, summarize, ip('1.1.1.0', host=True),
+            ip('1.1.0.0', host=True))
+        # test exception raised when first and last aren't IP addresses
+        self.assertRaises(ipaddr.IPTypeError, summarize, ip('1.1.1.0'),
+            ip('1.1.0.0'))
+        self.assertRaises(ipaddr.IPTypeError, summarize,
+            ip('1.1.1.0', host=True), ip('1.1.0.0'))
+        # test exception raised when first and last are not same version
+        self.assertRaises(ipaddr.IPTypeError, summarize, ip('::', host=True),
+            ip('1.1.0.0', host=True))
 
     def testNetworkComparison(self):
         # ip1 and ip2 have the same network address
@@ -536,10 +597,17 @@ class IpaddrUnitTest(unittest.TestCase):
     def testHash(self):
         self.assertEquals(hash(ipaddr.IP('10.1.1.0/24')),
                           hash(ipaddr.IP('10.1.1.0/24')))
+        self.assertEquals(hash(ipaddr.IP('10.1.1.0', host=True)),
+                          hash(ipaddr.IP('10.1.1.0', host=True)))
+        ip1 = ipaddr.IP('10.1.1.0', host=True)
+        ip2 = ipaddr.IP('1::', host=True)
         dummy = {}
         dummy[self.ipv4] = None
         dummy[self.ipv6] = None
+        dummy[ip1] = None
+        dummy[ip2] = None
         self.assertTrue(self.ipv4 in dummy)
+        self.assertTrue(ip2 in dummy)
 
     def testIPv4PrefixFromInt(self):
         addr1 = ipaddr.IP('10.1.1.0/24')

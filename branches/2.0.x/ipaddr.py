@@ -170,6 +170,120 @@ def IPv6(address, host=False):
     return IPv6Network(address)
 
 
+def _find_address_range(addresses):
+    """Find a sequence of addresses.
+
+    Args:
+        addresses: a list of IPv4 or IPv6 addresses.
+
+    Returns:
+        A tuple containing the first and last IP addresses in the sequence.
+
+    """
+    first = last = addresses[0]
+    for ip in addresses[1:]:
+        if ip._ip == last._ip + 1:
+            last = ip
+        else:
+            break
+    return (first, last)
+
+def _get_prefix_length(number1, number2, bits):
+    """Get the number of leading bits that are same for two numbers.
+
+    Args:
+        number1: an integer.
+        number2: another integer.
+        bits: the maximum number of bits to compare.
+
+    Returns:
+        The number of leading bits that are the same for two numbers.
+
+    """
+    for i in range(bits):
+        if number1 >> i == number2 >> i:
+            return bits - i
+    return 0
+
+def _count_righthand_zero_bits(number, bits):
+    """Count the number of zero bits on the right hand side.
+
+    Args:
+        number: an integer.
+        bits: maximum number of bits to count.
+
+    Returns:
+        The number of zero bits on the right hand side of the number.
+
+    """
+    if number == 0:
+        return bits
+    for i in range(bits):
+        if (number >> i) % 2:
+            return i
+
+def summarize_address_range(first, last):
+    """Summarize a network range given the first and last IP addresses.
+
+    Example:
+        >>> summarize_address_range(IPv4Address('1.1.1.0'),
+            IPv4Address('1.1.1.130'))
+        [IPv4Network('1.1.1.0/25'), IPv4Network('1.1.1.128/31'),
+        IPv4Network('1.1.1.130/32')]
+
+    Args:
+        first: the first IPv4 or IPv6 address in the range.
+        last: the last IPv4 or IPv6 address in the range.
+
+    Returns:
+        The address range collapsed to a list of IPv4 or IPv6 networks.
+
+    Raise:
+        IPTypeError:
+            If the first and last objects are not IP addresses.
+            If the first and last objects are not the same version.
+        ValueError:
+            If the last object is not greater than the first.
+            If the version is not 4 or 6.
+
+    """
+    if not (isinstance(first, BaseIP) and isinstance(last, BaseIP)):
+        raise IPTypeError("first and last must be IP addresses, not networks")
+    if first.version != last.version:
+        raise IPTypeError("IP addresses must be same version")
+    if first > last:
+        raise ValueError("last IP address must be greater than first")
+
+    networks = []
+
+    if first.version == 4:
+        ip = IPv4Network
+    elif first.version == 6:
+        ip = IPv6Network
+    else:
+        raise ValueError("unknown IP version")
+
+    ip_bits = first._max_prefixlen
+    first = first._ip
+    last = last._ip
+    while first <= last:
+        nbits = _count_righthand_zero_bits(first, ip_bits)
+        current = None
+        while nbits >= 0:
+            addend = 2**nbits - 1
+            current = first + addend
+            nbits -= 1
+            if current <= last:
+                break
+        prefix = _get_prefix_length(first, current, ip_bits)
+        net = ip(first)
+        net.prefixlen = prefix
+        networks.append(net)
+        if current == ip._ALL_ONES:
+            break
+        first = current + 1
+    return networks
+
 def _collapse_address_list_recursive(addresses):
     """Loops through the addresses, collapsing concurrent netblocks.
 
@@ -230,8 +344,29 @@ def collapse_address_list(addresses):
         A list of IPv4 or IPv6 objects depending on what we were passed.
 
     """
+    i = 0
+    addrs = []
+    ips = []
+    nets = []
+    # split IP addresses and networks
+    for ip in addresses:
+        if isinstance(ip, BaseIP):
+            ips.append(ip)
+        elif ip._prefixlen == ip._max_prefixlen:
+            ips.append(ip.ip)
+        else:
+            nets.append(ip)
+    # sort and dedup
+    ips = sorted(set(ips))
+    nets = sorted(set(nets))
+
+    while i < len(ips):
+        (first, last) = _find_address_range(ips[i:])
+        i = ips.index(last) + 1
+        addrs.extend(summarize_address_range(first, last))
+
     return _collapse_address_list_recursive(
-        sorted(addresses, key=BaseNet._get_networks_key))
+        sorted(addrs + nets, key=BaseNet._get_networks_key))
 
 # backwards compatibility
 CollapseAddrList = collapse_address_list
@@ -326,6 +461,9 @@ class BaseIP(IPAddrBase):
 
     def __str__(self):
         return  '%s' % self._string_from_ip_int(self._ip)
+
+    def __hash__(self):
+        return hash(self._ip)
 
     @property
     def version(self):
@@ -694,6 +832,7 @@ class BaseV4(object):
 
     def __init__(self, address):
         self._version = 4
+        self._max_prefixlen = 32
 
     def _explode_shorthand_ip_string(self, ip_str=None):
         if not ip_str:
@@ -760,6 +899,10 @@ class BaseV4(object):
             except ValueError:
                 return False
         return True
+
+    @property
+    def max_prefixlen(self):
+        return self._max_prefixlen
 
     @property
     def packed(self):
@@ -1114,6 +1257,7 @@ class BaseV6(object):
 
     def __init__(self, address):
         self._version = 6
+        self._max_prefixlen = 128
 
     def _ip_int_from_string(self, ip_str=None):
         """Turn an IPv6 ip_str into an integer.
@@ -1320,6 +1464,10 @@ class BaseV6(object):
         if ip_str.count('::') == 1:
             return True
         return False
+
+    @property
+    def max_prefixlen(self):
+        return self._max_prefixlen
 
     @property
     def packed(self):
