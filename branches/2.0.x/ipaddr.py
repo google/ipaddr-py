@@ -116,7 +116,7 @@ def IPAddress(address, version=None):
         address: A string or integer, the IP address.  Either IPv4 or
           IPv6 addresses may be supplied; integers less than 2**32 will
           be considered to be IPv4 by default.
-        version: An Integer, 4 or 6. Iif set, don't try to automatically
+        version: An Integer, 4 or 6. If set, don't try to automatically
           determine what the IP address type is. important for things
           like IPAddress(1), which could be IPv4, '0.0.0.0.1',  or IPv6,
           '::1'.
