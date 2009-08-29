@@ -654,9 +654,13 @@ class IpaddrUnitTest(unittest.TestCase):
         addr2 = ipaddr.IPNetwork(addr1)
         addr3 = ipaddr.IPNetwork('2001:658:22a:cafe:200::1/64')
         addr4 = ipaddr.IPNetwork(addr3)
+        addr5 = ipaddr.IPv4Address('1.1.1.1')
+        addr6 = ipaddr.IPv6Address('2001:658:22a:cafe:200::1')
 
         self.assertEqual(addr1, addr2)
         self.assertEqual(addr3, addr4)
+        self.assertEqual(addr5, ipaddr.IPv4Address(addr5))
+        self.assertEqual(addr6, ipaddr.IPv6Address(addr6))
 
     def testCompressIPv6Address(self):
         test_addresses = {

@@ -993,11 +993,13 @@ class IPv4Address(BaseV4, BaseIP):
                 self._ip = struct.unpack('!I', address)[0]
                 return
 
-        # we have a string
-        if not self._is_valid_ip(address):
-            raise IPv4IpValidationError(address)
+        # Assume input argument to be string or any object representation
+        # which converts into a formatted IP string.
+        addr_str = str(address)
+        if not self._is_valid_ip(addr_str):
+            raise IPv4IpValidationError(addr_str)
 
-        self._ip = self._ip_int_from_string(address)
+        self._ip = self._ip_int_from_string(addr_str)
 
 
 class IPv4Network(BaseV4, BaseNet):
@@ -1556,12 +1558,12 @@ class IPv6Address(BaseV6, BaseIP):
                 return
 
         # Assume input argument to be string or any object representation
-        # which converts into a formatted IP prefix string.
+        # which converts into a formatted IP string.
         addr_str = str(address)
         if not addr_str:
             raise IPv6IpValidationError('')
 
-        self._ip = self._ip_int_from_string(address)
+        self._ip = self._ip_int_from_string(addr_str)
 
 
 class IPv6Network(BaseV6, BaseNet):
