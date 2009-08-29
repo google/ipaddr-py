@@ -483,6 +483,14 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(ipaddr.IPTypeError, summarize, ipaddr.IPAddress('::'),
             ipaddr.IPNetwork('1.1.0.0'))
 
+    def testAddressComparison(self):
+        self.assertTrue(ipaddr.IPAddress('1.1.1.1') <=
+                        ipaddr.IPAddress('1.1.1.1'))
+        self.assertTrue(ipaddr.IPAddress('1.1.1.1') <=
+                        ipaddr.IPAddress('1.1.1.2'))
+        self.assertTrue(ipaddr.IPAddress('::1') <= ipaddr.IPAddress('::1'))
+        self.assertTrue(ipaddr.IPAddress('::1') <= ipaddr.IPAddress('::2'))
+
     def testNetworkComparison(self):
         # ip1 and ip2 have the same network address
         ip1 = ipaddr.IPv4Network('1.1.1.0/24')
@@ -528,6 +536,14 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertFalse(ip3 < ip2)
         self.assertFalse(ip2 > ip3)
         self.assertTrue(ip3 > ip2)
+
+        # <=, >=
+        self.assertTrue(ipaddr.IPNetwork('1.1.1.1') <=
+                        ipaddr.IPNetwork('1.1.1.1'))
+        self.assertTrue(ipaddr.IPNetwork('1.1.1.1') <=
+                        ipaddr.IPNetwork('1.1.1.2'))
+        self.assertTrue(ipaddr.IPNetwork('::1'), ipaddr.IPNetwork('::1'))
+        self.assertTrue(ipaddr.IPNetwork('::1'), ipaddr.IPNetwork('::2'))
 
     def testEmbeddedIpv4(self):
         ipv4_string = '192.168.0.1'

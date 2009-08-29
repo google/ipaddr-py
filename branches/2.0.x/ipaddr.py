@@ -586,6 +586,18 @@ class BaseNet(IPAddrBase):
         except AttributeError:
             return NotImplemented
 
+    def __le__(self, other):
+        gt = self.__gt__(other)
+        if gt is NotImplemented:
+            return NotImplemented
+        return not gt
+
+    def __ge__(self, other):
+        lt = self.__lt__(other)
+        if lt is NotImplemented:
+            return NotImplemented
+        return not lt
+
     def __eq__(self, other):
         try:
             return (self._version == other._version
