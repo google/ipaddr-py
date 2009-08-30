@@ -542,8 +542,11 @@ class IpaddrUnitTest(unittest.TestCase):
                         ipaddr.IPNetwork('1.1.1.1'))
         self.assertTrue(ipaddr.IPNetwork('1.1.1.1') <=
                         ipaddr.IPNetwork('1.1.1.2'))
-        self.assertTrue(ipaddr.IPNetwork('::1'), ipaddr.IPNetwork('::1'))
-        self.assertTrue(ipaddr.IPNetwork('::1'), ipaddr.IPNetwork('::2'))
+        self.assertFalse(ipaddr.IPNetwork('1.1.1.2') <=
+                        ipaddr.IPNetwork('1.1.1.1'))
+        self.assertTrue(ipaddr.IPNetwork('::1') <= ipaddr.IPNetwork('::1'))
+        self.assertTrue(ipaddr.IPNetwork('::1') <= ipaddr.IPNetwork('::2'))
+        self.assertFalse(ipaddr.IPNetwork('::2') <= ipaddr.IPNetwork('::1'))
 
     def testEmbeddedIpv4(self):
         ipv4_string = '192.168.0.1'
