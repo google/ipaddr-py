@@ -577,6 +577,10 @@ class IpaddrUnitTest(unittest.TestCase):
         addr1 = ipaddr.IPv6('2001::1')
         self.assertEqual('2001:0000:0000:0000:0000:0000:0000:0001',
                          addr1._explode_shorthand_ip_string(addr1.ip_ext))
+        self.assertEqual(ipaddr.IPv6(
+                '2001:4c30:100:2:2d0:b7ff:fed3:9a').ip_ext_full,
+                         '2001:4c30:0100:0002:02d0:b7ff:fed3:009a')
+                            
 
     def testIntRepresentation(self):
         self.assertEqual(16909060, int(self.ipv4))

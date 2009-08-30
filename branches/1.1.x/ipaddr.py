@@ -1164,6 +1164,8 @@ class IPv6(BaseIP):
         """
         if ip_str.count('::') == 1:
             return True
+        if filter(lambda x: len(x) != 4, ip_str.split(':')):
+            return True
         return False
 
     def _explode_shorthand_ip_string(self, ip_str):
@@ -1179,19 +1181,25 @@ class IPv6(BaseIP):
         if self._is_shorthand_ip(ip_str):
             new_ip = []
             hextet = ip_str.split('::')
-            sep = len(hextet[0].split(':')) + len(hextet[1].split(':'))
-            new_ip = hextet[0].split(':')
+            if len(hextet) > 1:
+                sep = len(hextet[0].split(':')) + len(hextet[1].split(':'))
+                new_ip = hextet[0].split(':')
 
-            for _ in xrange(8 - sep):
-                new_ip.append('0000')
-            new_ip += hextet[1].split(':')
+                for _ in xrange(8 - sep):
+                    new_ip.append('0000')
+                new_ip += hextet[1].split(':')
+            else:
+                new_ip = ip_str.split(':')
 
             # Now need to make sure every hextet is 4 lower case characters.
             # If a hextet is < 4 characters, we've got missing leading 0's.
             ret_ip = []
             for hextet in new_ip:
                 ret_ip.append(('0' * (4 - len(hextet)) + hextet).lower())
+
+            # We have our exploded ip.
             return ':'.join(ret_ip)
+
         # We've already got a longhand ip_str.
         return ip_str
 
