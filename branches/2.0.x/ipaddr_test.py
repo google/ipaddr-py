@@ -204,6 +204,20 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(str(self.ipv6.supernet(3).network),
                          '2001:658:22a:caf8::')
 
+    def testGetSupernet4(self):
+        self.assertRaises(ValueError, self.ipv4.supernet, prefixlen_diff=2,
+                          new_prefix=1)
+        self.assertRaises(ValueError, self.ipv4.supernet, new_prefix=25)
+        self.assertEqual(self.ipv4.supernet(prefixlen_diff=2),
+                         self.ipv4.supernet(new_prefix=22))
+
+        self.assertRaises(ValueError, self.ipv6.supernet, prefixlen_diff=2,
+                          new_prefix=1)
+        self.assertRaises(ValueError, self.ipv6.supernet, new_prefix=65)
+        self.assertEqual(self.ipv6.supernet(prefixlen_diff=2),
+                         self.ipv6.supernet(new_prefix=62))
+
+
     def testFancySubnetting(self):
         self.assertEqual(sorted(self.ipv4.subnet(prefixlen_diff=3)),
                          sorted(self.ipv4.subnet(new_prefix=27)))

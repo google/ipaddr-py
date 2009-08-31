@@ -864,7 +864,109 @@ class BaseNet(IPAddrBase):
             prefixlen = self._prefixlen
         return self._string_from_ip_int(self._ip_int_from_prefix(prefixlen))
 
+    def subnet(self, prefixlen_diff=1, new_prefix=None):
+        """The subnets which join to make the current subnet.
+
+        In the case that self contains only one IP
+        (self._prefixlen == 32), return a list with just ourself.
+
+        Args:
+            prefixlen_diff: An integer, the amount the prefix length
+              should be increased by. This should not be set if
+              new_prefix is also set.
+            new_prefix: The desired new prefix length. This must be a
+              larger number (smaller prefix) than the existing prefix.
+              This should not be set if prefixlen_diff is also set.
+
+        Returns:
+            A list of IPv6 objects.
+
+        Raises:
+            PrefixlenDiffInvalidError: The prefixlen_diff is too small
+              or too large.
+            ValueError: prefixlen_diff and new_prefix are both set or
+              new_prefix is a smaller number than the current prefix
+              (smaller number means a larger network)
+
+        """
+        if self._prefixlen == self._max_prefixlen:
+            return [self]
+
+        if new_prefix is not None:
+            if new_prefix < self._prefixlen:
+                raise ValueError('new prefix must be longer')
+            if prefixlen_diff != 1:
+                raise ValueError('cannot set prefixlen_diff and new_prefix')
+            prefixlen_diff = new_prefix - self._prefixlen
+
+        if prefixlen_diff < 0:
+            raise PrefixlenDiffInvalidError('prefix length diff must be > 0')
+        new_prefixlen = self._prefixlen + prefixlen_diff
+
+        if not self._is_valid_netmask(str(new_prefixlen)):
+            raise PrefixlenDiffInvalidError(
+                'prefix length diff %d is invalid for netblock %s' % (
+                    new_prefixlen, str(self)))
+
+        first = IPNetwork('%s/%s' % (str(self.network),
+                                     str(self._prefixlen + prefixlen_diff)),
+                         version=self._version)
+        subnets = [first]
+        current = first
+        while True:
+            broadcast = current.broadcast
+            if broadcast == self.broadcast:
+                break
+            new_addr = IPAddress(int(broadcast) + 1, version=self._version)
+            current = IPNetwork('%s/%s' % (str(new_addr), str(new_prefixlen)),
+                                version=self._version)
+            subnets.append(current)
+
+        return subnets
+
+    def supernet(self, prefixlen_diff=1, new_prefix=None):
+        """The supernet containing the current network.
+
+        Args:
+            prefixlen_diff: An integer, the amount the prefix length of
+              the network should be decreased by.  For example, given a
+              /24 network and a prefixlen_diff of 3, a supernet with a
+              /21 netmask is returned.
+
+        Returns:
+            An IPv4 network object.
+
+        Raises:
+            PrefixlenDiffInvalidError: If
+              self.prefixlen - prefixlen_diff < 0. I.e., you have a
+              negative prefix length.
+            ValueError: prefixlen_diff and new_prefix are both set or
+              new_prefix is a larger number than the current prefix
+              (larger number means a smaller network)
+
+        """
+        if self._prefixlen == 0:
+            return self
+
+        if new_prefix is not None:
+            if new_prefix > self._prefixlen:
+                raise ValueError('new prefix must be shorter')
+            if prefixlen_diff != 1:
+                raise ValueError('cannot set prefixlen_diff and new_prefix')
+            prefixlen_diff = self._prefixlen - new_prefix
+
+
+        if self.prefixlen - prefixlen_diff < 0:
+            raise PrefixlenDiffInvalidError(
+                'current prefixlen is %d, cannot have a prefixlen_diff of %d' %
+                (self.prefixlen, prefixlen_diff))
+        return IPNetwork('%s/%s' % (str(self.network),
+                                    str(self.prefixlen - prefixlen_diff)),
+                         version=self._version)
+
     # backwards compatibility
+    Subnet = subnet
+    Supernet = supernet
     AddressExclude = address_exclude
     CompareNetworks = compare_networks
     Contains = __contains__
@@ -1118,93 +1220,6 @@ class IPv4Network(BaseV4, BaseNet):
             self.netmask = IPv4Address(self._ip_int_from_prefix(
                 self._prefixlen))
 
-    # TODO(pmoody): Move this to BaseNet and use self._max_prefixlen
-    def subnet(self, prefixlen_diff=1, new_prefix=None):
-        """The subnets which join to make the current subnet.
-
-        In the case that self contains only one IP
-        (self._prefixlen == 32), return a list with just ourself.
-
-        Args:
-            prefixlen_diff: An integer, the amount the prefix length
-              should be increased by. This should not be set if
-              new_prefix is also set.
-            new_prefix: The desired new prefix length. This must be a
-              larger number (smaller prefix) than the existing prefix.
-              This should not be set if prefixlen_diff is also set.
-
-        Returns:
-            A list of IPv6 objects.
-
-        Raises:
-            PrefixlenDiffInvalidError: The prefixlen_diff is too small
-              or too large.
-            ValueError: prefixlen_diff and new_prefix are both set or
-              new_prefix is a smaller number than the current prefix
-              (smaller number means a larger network)
-
-        """
-        if self._prefixlen == 32:
-            return [self]
-
-        if new_prefix is not None:
-            if new_prefix < self._prefixlen:
-                raise ValueError('new prefix must be longer')
-            if prefixlen_diff != 1:
-                raise ValueError('cannot set prefixlen_diff and new_prefix')
-            prefixlen_diff = new_prefix - self._prefixlen
-
-        if prefixlen_diff < 0:
-            raise PrefixlenDiffInvalidError('prefix length diff must be > 0')
-        new_prefixlen = self._prefixlen + prefixlen_diff
-
-        if not self._is_valid_netmask(str(new_prefixlen)):
-            raise PrefixlenDiffInvalidError(
-                'prefix length diff %d is invalid for netblock %s' % (
-                    new_prefixlen, str(self)))
-
-        first = IPv4Network('%s/%s' % (str(self.network),
-                                       str(self._prefixlen + prefixlen_diff)))
-        subnets = [first]
-        current = first
-        while True:
-            broadcast = current.broadcast
-            if broadcast == self.broadcast:
-                break
-            current = IPv4Network('%d/%s' % (int(broadcast) + 1,
-                                             str(new_prefixlen)))
-            subnets.append(current)
-
-        return subnets
-
-    # TODO(pmoody): Move this to BaseNet. Implement new_prefix.
-    def supernet(self, prefixlen_diff=1):
-        """The supernet containing the current network.
-
-        Args:
-            prefixlen_diff: An integer, the amount the prefix length of
-              the network should be decreased by.  For example, given a
-              /24 network and a prefixlen_diff of 3, a supernet with a
-              /21 netmask is returned.
-
-        Returns:
-            An IPv4 network object.
-
-        Raises:
-            PrefixlenDiffInvalidError: If
-              self.prefixlen - prefixlen_diff < 0. I.e., you have a
-              negative prefix length.
-
-        """
-        if self._prefixlen == 0:
-            return self
-        if self.prefixlen - prefixlen_diff < 0:
-            raise PrefixlenDiffInvalidError(
-                'current prefixlen is %d, cannot have a prefixlen_diff of %d' %
-                (self.prefixlen, prefixlen_diff))
-        return IPv4Network('%s/%s' % (str(self.network),
-                                      str(self.prefixlen - prefixlen_diff)))
-
     @property
     def is_private(self):
         """Test if this address is allocated for private networks.
@@ -1284,8 +1299,6 @@ class IPv4Network(BaseV4, BaseNet):
         return 0 <= netmask <= 32
 
     # backwards compatibility
-    Subnet = subnet
-    Supernet = supernet
     IsRFC1918 = lambda self: self.is_private
     IsMulticast = lambda self: self.is_multicast
     IsLoopback = lambda self: self.is_loopback
@@ -1668,93 +1681,6 @@ class IPv6Network(BaseV6, BaseNet):
         self._ip = self._ip_int_from_string(addr[0])
         self.ip = IPv6Address(self._ip)
 
-    # TODO(pmoody): Move this to BaseNet and use self._max_prefixlen
-    def subnet(self, prefixlen_diff=1, new_prefix=None):
-        """The subnets which join to make the current subnet.
-
-        In the case that self contains only one IP
-        (self._prefixlen == 128), return a list with just ourself.
-
-        Args:
-            prefixlen_diff: An integer, the amount the prefix length
-              should be increased by. This should not be set if
-              new_prefix is also set.
-            new_prefix: The desired new prefix length. This must be a
-              larger number (smaller prefix) than the existing prefix.
-              This should not be set if prefixlen_diff is also set.
-
-        Returns:
-            A list of IPv6 objects.
-
-        Raises:
-            PrefixlenDiffInvalidError: The prefixlen_diff is too small
-              or too large.
-            ValueError: prefixlen_diff and new_prefix are both set or
-              new_prefix is a smaller number than the current prefix
-              (smaller number means a larger network)
-
-        """
-        # Preserve original functionality (return [self] if
-        # self.prefixlen == 128).
-        if self._prefixlen == 128:
-            return [self]
-
-        if new_prefix is not None:
-            if new_prefix < self._prefixlen:
-                raise ValueError('new prefix must be longer')
-            if prefixlen_diff != 1:
-                raise ValueError('cannot set prefixlen_diff and new_prefix')
-            prefixlen_diff = new_prefix - self._prefixlen
-
-        if prefixlen_diff < 0:
-            raise PrefixlenDiffInvalidError('Prefix length diff must be > 0')
-        new_prefixlen = self._prefixlen + prefixlen_diff
-        if not self._is_valid_netmask(str(new_prefixlen)):
-            raise PrefixlenDiffInvalidError(
-                'Prefix length diff %d is invalid for netblock %s' % (
-                new_prefixlen, str(self)))
-        first = IPv6Network('%s/%s' % (str(self.network),
-                                       str(self._prefixlen + prefixlen_diff)))
-        subnets = [first]
-        current = first
-        while True:
-            broadcast = current.broadcast
-            if broadcast == self.broadcast:
-                break
-            current = IPv6Network('%s/%s' % (
-                self._string_from_ip_int(int(broadcast) + 1),
-                str(new_prefixlen)))
-            subnets.append(current)
-
-        return subnets
-
-    # TODO(pmoody): Move this BaseNet. Implement new_prefix.
-    def supernet(self, prefixlen_diff=1):
-        """The supernet containing the current network.
-
-        Args:
-            prefixlen_diff: An integer, the amount the prefix length of the
-              network should be decreased by.  For example, given a /96
-              network and a prefixlen_diff of 3, a supernet with a /93
-              netmask is returned.
-
-        Returns:
-            An IPv6 object.
-
-        Raises:
-            PrefixlenDiffInvalidError: If
-              self._prefixlen - prefixlen_diff < 0. I.e., you have a
-              negative prefix length.
-
-        """
-        if self._prefixlen == 0:
-            return self
-        if self._prefixlen - prefixlen_diff < 0:
-            raise PrefixlenDiffInvalidError(
-                'current prefixlen is %d, cannot have a prefixlen_diff of %d' %
-                (self._prefixlen, prefixlen_diff))
-        return IPv6Network('%s/%s' % (self._string_from_ip_int(self._ip),
-                               str(self._prefixlen - prefixlen_diff)))
 
     @property
     def is_multicast(self):
@@ -1839,7 +1765,3 @@ class IPv6Network(BaseV6, BaseNet):
         except ValueError:
             return False
         return 0 <= prefixlen <= 128
-
-    # backwards compatibility
-    Subnet = subnet
-    Supernet = supernet
