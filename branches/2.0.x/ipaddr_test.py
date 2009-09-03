@@ -606,6 +606,7 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEquals(ipaddr.IPv6Address, type(ipv6addr))
 
     def testReservedIpv4(self):
+        # test networks
         self.assertEquals(True, ipaddr.IPNetwork('224.1.1.1/31').is_multicast)
         self.assertEquals(False, ipaddr.IPNetwork('240.0.0.0').is_multicast)
 
@@ -626,38 +627,91 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEquals(True, ipaddr.IPNetwork('127.42.0.0/16').is_loopback)
         self.assertEquals(False, ipaddr.IPNetwork('128.0.0.0').is_loopback)
 
+        # test addresses
+        self.assertEquals(True, ipaddr.IPAddress('224.1.1.1').is_multicast)
+        self.assertEquals(False, ipaddr.IPAddress('240.0.0.0').is_multicast)
+
+        self.assertEquals(True, ipaddr.IPAddress('192.168.1.1').is_private)
+        self.assertEquals(False, ipaddr.IPAddress('192.169.0.0').is_private)
+        self.assertEquals(True, ipaddr.IPAddress('10.255.255.255').is_private)
+        self.assertEquals(False, ipaddr.IPAddress('11.0.0.0').is_private)
+        self.assertEquals(True, ipaddr.IPAddress('172.31.255.255').is_private)
+        self.assertEquals(False, ipaddr.IPAddress('172.32.0.0').is_private)
+
+        self.assertEquals(True,
+                          ipaddr.IPAddress('169.254.100.200').is_link_local)
+        self.assertEquals(False,
+                          ipaddr.IPAddress('169.255.100.200').is_link_local)
+
+        self.assertEquals(True,
+                          ipaddr.IPAddress('127.100.200.254').is_loopback)
+        self.assertEquals(True, ipaddr.IPAddress('127.42.0.0').is_loopback)
+        self.assertEquals(False, ipaddr.IPAddress('128.0.0.0').is_loopback)
+
+        
     def testReservedIpv6(self):
-        ip = ipaddr.IPNetwork
 
-        self.assertEquals(True, ip('ffff::').is_multicast)
-        self.assertEquals(True, ip(2**128-1).is_multicast)
-        self.assertEquals(True, ip('ff00::').is_multicast)
-        self.assertEquals(False, ip('fdff::').is_multicast)
+        self.assertEquals(True, ipaddr.IPNetwork('ffff::').is_multicast)
+        self.assertEquals(True, ipaddr.IPNetwork(2**128-1).is_multicast)
+        self.assertEquals(True, ipaddr.IPNetwork('ff00::').is_multicast)
+        self.assertEquals(False, ipaddr.IPNetwork('fdff::').is_multicast)
 
-        self.assertEquals(True, ip('fecf::').is_site_local)
-        self.assertEquals(True, ip('feff:ffff:ffff:ffff::').is_site_local)
-        self.assertEquals(False, ip('fbf:ffff::').is_site_local)
-        self.assertEquals(False, ip('ff00::').is_site_local)
+        self.assertEquals(True, ipaddr.IPNetwork('fecf::').is_site_local)
+        self.assertEquals(True, ipaddr.IPNetwork(
+                'feff:ffff:ffff:ffff::').is_site_local)
+        self.assertEquals(False, ipaddr.IPNetwork('fbf:ffff::').is_site_local)
+        self.assertEquals(False, ipaddr.IPNetwork('ff00::').is_site_local)
 
-        self.assertEquals(True, ip('fc00::').is_private)
-        self.assertEquals(True, ip('fc00:ffff:ffff:ffff::').is_private)
-        self.assertEquals(False, ip('fbff:ffff::').is_private)
-        self.assertEquals(False, ip('fe00::').is_private)
+        self.assertEquals(True, ipaddr.IPNetwork('fc00::').is_private)
+        self.assertEquals(True, ipaddr.IPNetwork(
+                'fc00:ffff:ffff:ffff::').is_private)
+        self.assertEquals(False, ipaddr.IPNetwork('fbff:ffff::').is_private)
+        self.assertEquals(False, ipaddr.IPNetwork('fe00::').is_private)
 
-        self.assertEquals(True, ip('fea0::').is_link_local)
-        self.assertEquals(True, ip('febf:ffff::').is_link_local)
-        self.assertEquals(False, ip('fe7f:ffff::').is_link_local)
-        self.assertEquals(False, ip('fec0::').is_link_local)
+        self.assertEquals(True, ipaddr.IPNetwork('fea0::').is_link_local)
+        self.assertEquals(True, ipaddr.IPNetwork('febf:ffff::').is_link_local)
+        self.assertEquals(False, ipaddr.IPNetwork('fe7f:ffff::').is_link_local)
+        self.assertEquals(False, ipaddr.IPNetwork('fec0::').is_link_local)
 
-        self.assertEquals(True, ip('0:0::0:01').is_loopback)
-        self.assertEquals(False, ip('::1/127').is_loopback)
-        self.assertEquals(False, ip('::').is_loopback)
-        self.assertEquals(False, ip('::2').is_loopback)
+        self.assertEquals(True, ipaddr.IPNetwork('0:0::0:01').is_loopback)
+        self.assertEquals(False, ipaddr.IPNetwork('::1/127').is_loopback)
+        self.assertEquals(False, ipaddr.IPNetwork('::').is_loopback)
+        self.assertEquals(False, ipaddr.IPNetwork('::2').is_loopback)
 
-        self.assertEquals(True, ip('0::0').is_unspecified)
-        self.assertEquals(False, ip('::1').is_unspecified)
-        self.assertEquals(False, ip('::/127').is_unspecified)
+        self.assertEquals(True, ipaddr.IPNetwork('0::0').is_unspecified)
+        self.assertEquals(False, ipaddr.IPNetwork('::1').is_unspecified)
+        self.assertEquals(False, ipaddr.IPNetwork('::/127').is_unspecified)
 
+        # test addresses
+        self.assertEquals(True, ipaddr.IPAddress('ffff::').is_multicast)
+        self.assertEquals(True, ipaddr.IPAddress(2**128-1).is_multicast)
+        self.assertEquals(True, ipaddr.IPAddress('ff00::').is_multicast)
+        self.assertEquals(False, ipaddr.IPAddress('fdff::').is_multicast)
+
+        self.assertEquals(True, ipaddr.IPAddress('fecf::').is_site_local)
+        self.assertEquals(True, ipaddr.IPAddress(
+                'feff:ffff:ffff:ffff::').is_site_local)
+        self.assertEquals(False, ipaddr.IPAddress('fbf:ffff::').is_site_local)
+        self.assertEquals(False, ipaddr.IPAddress('ff00::').is_site_local)
+
+        self.assertEquals(True, ipaddr.IPAddress('fc00::').is_private)
+        self.assertEquals(True, ipaddr.IPAddress(
+                'fc00:ffff:ffff:ffff::').is_private)
+        self.assertEquals(False, ipaddr.IPAddress('fbff:ffff::').is_private)
+        self.assertEquals(False, ipaddr.IPAddress('fe00::').is_private)
+
+        self.assertEquals(True, ipaddr.IPAddress('fea0::').is_link_local)
+        self.assertEquals(True, ipaddr.IPAddress('febf:ffff::').is_link_local)
+        self.assertEquals(False, ipaddr.IPAddress('fe7f:ffff::').is_link_local)
+        self.assertEquals(False, ipaddr.IPAddress('fec0::').is_link_local)
+
+        self.assertEquals(True, ipaddr.IPAddress('0:0::0:01').is_loopback)
+        self.assertEquals(True, ipaddr.IPAddress('::1').is_loopback)
+        self.assertEquals(False, ipaddr.IPAddress('::2').is_loopback)
+
+        self.assertEquals(True, ipaddr.IPAddress('0::0').is_unspecified)
+        self.assertEquals(False, ipaddr.IPAddress('::1').is_unspecified)
+        
     def testAddrExclude(self):
         addr1 = ipaddr.IPNetwork('10.1.1.0/24')
         addr2 = ipaddr.IPNetwork('10.1.1.0/26')

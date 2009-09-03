@@ -22,7 +22,7 @@ and networks.
 
 """
 
-__version__ = 'trunk'
+__version__ = '2.0.0'
 
 import struct
 
@@ -1067,6 +1067,49 @@ class BaseV4(object):
     def version(self):
         return self._version
 
+    @property
+    def is_private(self):
+        """Test if this address is allocated for private networks.
+
+        Returns:
+            A boolean, True if the address is reserved per RFC 1918.
+
+        """
+        return (self in IPv4Network('10.0.0.0/8') or
+                self in IPv4Network('172.16.0.0/12') or
+                self in IPv4Network('192.168.0.0/16'))
+
+    @property
+    def is_multicast(self):
+        """Test if the address is reserved for multicast use.
+
+        Returns:
+            A boolean, True if the address is multicast.
+            See RFC 3171 for details.
+
+        """
+        return self in IPv4Network('224.0.0.0/4')
+
+    @property
+    def is_loopback(self):
+        """Test if the address is a loopback adddress.
+
+        Returns:
+            A boolean, True if the address is a loopback per RFC 3330.
+
+        """
+        return self in IPv4Network('127.0.0.0/8')
+
+    @property
+    def is_link_local(self):
+        """Test if the address is reserved for link-local.
+
+        Returns:
+            A boolean, True if the address is link-local per RFC 3927.
+
+        """
+        return self in IPv4Network('169.254.0.0/16')
+
 
 class IPv4Address(BaseV4, BaseIP):
 
@@ -1219,49 +1262,6 @@ class IPv4Network(BaseV4, BaseNet):
             self._prefixlen = 32
             self.netmask = IPv4Address(self._ip_int_from_prefix(
                 self._prefixlen))
-
-    @property
-    def is_private(self):
-        """Test if this address is allocated for private networks.
-
-        Returns:
-            A boolean, True if the address is reserved per RFC 1918.
-
-        """
-        return (self in IPv4Network('10.0.0.0/8') or
-                self in IPv4Network('172.16.0.0/12') or
-                self in IPv4Network('192.168.0.0/16'))
-
-    @property
-    def is_multicast(self):
-        """Test if the address is reserved for multicast use.
-
-        Returns:
-            A boolean, True if the address is multicast.
-            See RFC 3171 for details.
-
-        """
-        return self in IPv4Network('224.0.0.0/4')
-
-    @property
-    def is_loopback(self):
-        """Test if the address is a loopback adddress.
-
-        Returns:
-            A boolean, True if the address is a loopback per RFC 3330.
-
-        """
-        return self in IPv4Network('127.0.0.0/8')
-
-    @property
-    def is_link_local(self):
-        """Test if the address is reserved for link-local.
-
-        Returns:
-            A boolean, True if the address is link-local per RFC 3927.
-
-        """
-        return self in IPv4Network('169.254.0.0/16')
 
     def _is_hostmask(self, ip_str):
         """Test if the IP string is a hostmask (rather than a netmask).
@@ -1539,6 +1539,73 @@ class BaseV6(object):
     def version(self):
         return self._version
 
+    @property
+    def is_multicast(self):
+        """Test if the address is reserved for multicast use.
+
+        Returns:
+            A boolean, True if the address is a multicast address.
+            See RFC 2373 2.7 for details.
+
+        """
+        return self in IPv6Network('ff00::/8')
+
+    @property
+    def is_unspecified(self):
+        """Test if the address is unspecified.
+
+        Returns:
+            A boolean, True if this is the unspecified address as defined in
+            RFC 2373 2.5.2.
+
+        """
+        return self == IPv6Network('::')
+
+    @property
+    def is_loopback(self):
+        """Test if the address is a loopback adddress.
+
+        Returns:
+            A boolean, True if the address is a loopback address as defined in
+            RFC 2373 2.5.3.
+
+        """
+        return self == IPv6Network('::1')
+
+    @property
+    def is_link_local(self):
+        """Test if the address is reserved for link-local.
+
+        Returns:
+            A boolean, True if the address is reserved per RFC 4291.
+
+        """
+        return self in IPv6Network('fe80::/10')
+
+    @property
+    def is_site_local(self):
+        """Test if the address is reserved for site-local.
+
+        Note that the site-local address space has been deprecated by RFC 3879.
+        Use is_private to test if this address is in the space of unique local
+        addresses as defined by RFC 4193.
+
+        Returns:
+            A boolean, True if the address is reserved per RFC 3513 2.5.6.
+
+        """
+        return self in IPv6Network('fec0::/10')
+
+    @property
+    def is_private(self):
+        """Test if this address is allocated for private networks.
+
+        Returns:
+            A boolean, True if the address is reserved per RFC 4193.
+
+        """
+        return self in IPv6Network('fc00::/7')
+
 
 class IPv6Address(BaseV6, BaseIP):
 
@@ -1681,73 +1748,6 @@ class IPv6Network(BaseV6, BaseNet):
         self._ip = self._ip_int_from_string(addr[0])
         self.ip = IPv6Address(self._ip)
 
-
-    @property
-    def is_multicast(self):
-        """Test if the address is reserved for multicast use.
-
-        Returns:
-            A boolean, True if the address is a multicast address.
-            See RFC 2373 2.7 for details.
-
-        """
-        return self in IPv6Network('ff00::/8')
-
-    @property
-    def is_unspecified(self):
-        """Test if the address is unspecified.
-
-        Returns:
-            A boolean, True if this is the unspecified address as defined in
-            RFC 2373 2.5.2.
-
-        """
-        return self == IPv6Network('::')
-
-    @property
-    def is_loopback(self):
-        """Test if the address is a loopback adddress.
-
-        Returns:
-            A boolean, True if the address is a loopback address as defined in
-            RFC 2373 2.5.3.
-
-        """
-        return self == IPv6Network('::1')
-
-    @property
-    def is_link_local(self):
-        """Test if the address is reserved for link-local.
-
-        Returns:
-            A boolean, True if the address is reserved per RFC 4291.
-
-        """
-        return self in IPv6Network('fe80::/10')
-
-    @property
-    def is_site_local(self):
-        """Test if the address is reserved for site-local.
-
-        Note that the site-local address space has been deprecated by RFC 3879.
-        Use is_private to test if this address is in the space of unique local
-        addresses as defined by RFC 4193.
-
-        Returns:
-            A boolean, True if the address is reserved per RFC 3513 2.5.6.
-
-        """
-        return self in IPv6Network('fec0::/10')
-
-    @property
-    def is_private(self):
-        """Test if this address is allocated for private networks.
-
-        Returns:
-            A boolean, True if the address is reserved per RFC 4193.
-
-        """
-        return self in IPv6Network('fc00::/7')
 
     def _is_valid_netmask(self, prefixlen):
         """Verify that the netmask/prefixlen is valid.
