@@ -4,6 +4,146 @@
 
 Here are the visible changes for each release.
 
+== 2.0.0 ==
+
+ipaddr-2.0 release notes.
+
+First and foremost, this is a backwards incompatible change.  Code written for ipaddr-1.x will likely not work stock with ipaddr-2.0. For users of the 1.x branch, I'll continue to provide support, but new-feature development has ceased. But it's not so bad, take a look.All in all, I think this new version of ipaddr is much more intuitive and easy to use. 
+
+The best way to get a feel for this code is to download it and try and out, but I've tried to list some of the more important changes below to help you out.
+
+The major changes.
+
+  # IPvXAddress and IPvXNetwork classes.
+
+  * Individual addresses are now (IPv4|IPv6)Address objects. Network attributes that are actually addresses (eg, broadcast, network, hostmask) are now (IPv4|IPv6)Address objects. That means no more IPv4/IPv6 classes handling only networks.
+{{{
+In [3]: ipaddr.IPv4Network("1.1.1.0/24")
+Out[3]: IPv4Network('1.1.1.0/24')
+
+In [4]: ipaddr.IPv4Network("1.1.1.0/24").network
+Out[4]: IPv4Address('1.1.1.0')
+
+In [5]: ipaddr.IPv4Network("1.1.1.0/24").broadcast
+Out[5]: IPv4Address('1.1.1.255')
+}}}
+
+  * no more ext methods. To reference the stringified version of any attribute, you call str() on (similar for the numeric value with int()).
+{{{
+In [6]: str(ipaddr.IPv4Network("1.1.1.0/24").broadcast)
+Out[6]: '1.1.1.255'
+
+In [7]: int(ipaddr.IPv4Network("1.1.1.0/24").broadcast)
+Out[7]: 16843263
+
+In [8]: int(ipaddr.IPv4Network("1.1.1.0/24").network)
+Out[8]: 16843008
+
+In [9]: str(ipaddr.IPv4Network("1.1.1.0/24").network)
+Out[9]: '1.1.1.0'
+}}}
+
+  * IP() everything-constructor has been replaced by IPAddress() and IPNetwork() constructors.  It seems reasonable to assume that an application programmer will know when they are dealing strictly with ip addresses vs. networks and making this separation de-clutters the code.  IPNetwork still assumes a default prefixlength of 32 for IPv4 and 128 for IPv6 if none is supplied (just like IP() used to), so when in doubt, you can always use IPNetwork.
+{{{
+In [16]: ipaddr.IPNetwork('1.1.1.1')
+Out[16]: IPv4Network('1.1.1.1/32')
+
+In [17]: ipaddr.IPNetwork('1.1.1.1/12')
+Out[17]: IPv4Network('1.1.1.1/12')
+
+In [18]: ipaddr.IPNetwork('::1')
+Out[18]: IPv6Network('::1/128')
+
+In [19]: ipaddr.IPNetwork('::1/64')
+Out[19]: IPv6Network('::1/64')
+}}}
+
+  # Some other (but no less important) bug fixes/improvements:
+
+  * __ contains __ accepts strings/ints as well as (IPv4|IPv6)Address objects.
+{{{
+In [9]: ipaddr.IPAddress('1.1.1.1') in ipaddr.IPNetwork('1.1.1.0/24')
+Out[9]: True
+
+In [10]: '1.1.1.1' in  ipaddr.IPv4Network("1.1.1.0/24")         
+Out[10]: True
+
+In [11]: '1' in ipaddr.IPv4Network("0.0.0.0/0")
+Out[11]: True
+
+In [12]: 1 in ipaddr.IPv4Network("0.0.0.0/0")
+Out[12]: True
+}}}
+  * summarize_address_range. You can now get a list of all of the networks between two distinct (IPv4|IPv6)Address'es (results in potentially huge speed boosts for address collapsing)
+{{{
+In [14]: ipaddr.summarize_address_range(ipaddr.IPAddress('1.1.0.0'), ipaddr.IPAddress('1.1.255.255'))
+Out[14]: [IPv4Network('1.1.0.0/16')]
+
+In [15]: ipaddr.summarize_address_range(ipaddr.IPAddress('1.1.0.0'), ipaddr.IPAddress('1.1.255.254'))
+Out[15]: 
+[IPv4Network('1.1.0.0/17'),
+ IPv4Network('1.1.128.0/18'),
+ IPv4Network('1.1.192.0/19'),
+ IPv4Network('1.1.224.0/20'),
+ IPv4Network('1.1.240.0/21'),
+ IPv4Network('1.1.248.0/22'),
+ IPv4Network('1.1.252.0/23'),
+ IPv4Network('1.1.254.0/24'),
+ IPv4Network('1.1.255.0/25'),
+ IPv4Network('1.1.255.128/26'),
+ IPv4Network('1.1.255.192/27'),
+ IPv4Network('1.1.255.224/28'),
+ IPv4Network('1.1.255.240/29'),
+ IPv4Network('1.1.255.248/30'),
+ IPv4Network('1.1.255.252/31'),
+ IPv4Network('1.1.255.254/32')]
+}}}
+
+  * network iterators. the (IPv4|IPv6)Network classes now implement iterators to help quickly access each member of a network in sequence:
+{{{
+
+In [24]: for addr in iter(ipaddr.IPNetwork('1.1.1.1/28')): addr
+   ....: 
+Out[24]: IPv4Address('1.1.1.0')
+Out[24]: IPv4Address('1.1.1.1')
+Out[24]: IPv4Address('1.1.1.2')
+Out[24]: IPv4Address('1.1.1.3')
+Out[24]: IPv4Address('1.1.1.4')
+Out[24]: IPv4Address('1.1.1.5')
+Out[24]: IPv4Address('1.1.1.6')
+Out[24]: IPv4Address('1.1.1.7')
+Out[24]: IPv4Address('1.1.1.8')
+Out[24]: IPv4Address('1.1.1.9')
+Out[24]: IPv4Address('1.1.1.10')
+Out[24]: IPv4Address('1.1.1.11')
+Out[24]: IPv4Address('1.1.1.12')
+Out[24]: IPv4Address('1.1.1.13')
+Out[24]: IPv4Address('1.1.1.14')
+Out[24]: IPv4Address('1.1.1.15')
+}}}
+
+  * additionally, an iterhosts() method has been added to allow for iterating over all of the usable addresses on a network (everything except the network and broadcast addresses)
+{{{
+In [26]: for addr in ipaddr.IPNetwork('1.1.1.1/28').iterhosts(): addr
+   ....: 
+Out[26]: IPv4Address('1.1.1.1')
+Out[26]: IPv4Address('1.1.1.2')
+Out[26]: IPv4Address('1.1.1.3')
+Out[26]: IPv4Address('1.1.1.4')
+Out[26]: IPv4Address('1.1.1.5')
+Out[26]: IPv4Address('1.1.1.6')
+Out[26]: IPv4Address('1.1.1.7')
+Out[26]: IPv4Address('1.1.1.8')
+Out[26]: IPv4Address('1.1.1.9')
+Out[26]: IPv4Address('1.1.1.10')
+Out[26]: IPv4Address('1.1.1.11')
+Out[26]: IPv4Address('1.1.1.12')
+Out[26]: IPv4Address('1.1.1.13')
+Out[26]: IPv4Address('1.1.1.14')
+}}}
+
+Thanks to the python community and everyone who's made feature suggestions or submitted patches. Please continue to send bugs/enhancements/patches to the mailing list.
+
 == 1.1.1 ==
 
 This release contains a single important bugfix.  All users of 1.1.0 should upgrade.
