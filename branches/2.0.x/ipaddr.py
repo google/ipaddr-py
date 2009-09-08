@@ -1068,6 +1068,17 @@ class BaseV4(object):
         return self._version
 
     @property
+    def is_reserved(self):
+       """Test if the address is otherwise IETF reserved.
+
+        Returns:
+            A boolean, True if the address is within the
+            reserved IPv4 Network range.
+ 
+       """
+       return self in IPv4Network('240.0.0.0/4')
+
+    @property
     def is_private(self):
         """Test if this address is allocated for private networks.
 
@@ -1551,6 +1562,31 @@ class BaseV6(object):
         return self in IPv6Network('ff00::/8')
 
     @property
+    def is_reserved(self):
+        """Test if the address is otherwise IETF reserved.
+
+        Returns:
+            A boolean, True if the address is within one of the
+            reserved IPv6 Network ranges.
+ 
+        """
+        return (self in IPv6Network('::/8') or
+                self in IPv6Network('100::/8') or
+                self in IPv6Network('200::/7') or
+                self in IPv6Network('400::/6') or
+                self in IPv6Network('800::/5') or
+                self in IPv6Network('1000::/4') or
+                self in IPv6Network('4000::/3') or
+                self in IPv6Network('6000::/3') or
+                self in IPv6Network('8000::/3') or
+                self in IPv6Network('A000::/3') or
+                self in IPv6Network('C000::/3') or
+                self in IPv6Network('E000::/4') or
+                self in IPv6Network('F000::/5') or
+                self in IPv6Network('F800::/6') or
+                self in IPv6Network('FE00::/9'))
+
+    @property
     def is_unspecified(self):
         """Test if the address is unspecified.
 
@@ -1606,6 +1642,23 @@ class BaseV6(object):
         """
         return self in IPv6Network('fc00::/7')
 
+    @property
+    def ipv4_mapped(self):
+        """Return the IPv4 mapped address.
+
+        Returns:
+            If the IPv6 address is a v4 mapped address, return the
+            IPv4 mapped address. Return None otherwise.
+
+        """
+        hextets = self._explode_shorthand_ip_string().split(':')
+        if hextets[-3] != 'ffff':
+            return None
+        try:
+            return IPv4Address(int('%s%s' % (hextets[-2], hextets[-1]), 16))
+        except IPv4IpvalidationError:
+            return None
+    
 
 class IPv6Address(BaseV6, BaseIP):
 

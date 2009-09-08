@@ -711,7 +711,18 @@ class IpaddrUnitTest(unittest.TestCase):
 
         self.assertEquals(True, ipaddr.IPAddress('0::0').is_unspecified)
         self.assertEquals(False, ipaddr.IPAddress('::1').is_unspecified)
-        
+
+        # some generic IETF reserved addresses
+        self.assertEquals(True, ipaddr.IPAddress('100::').is_reserved)
+        self.assertEquals(True, ipaddr.IPNetwork('4000::1/128').is_reserved)
+
+    def testIpv4Mapped(self):
+        self.assertEqual(ipaddr.IPAddress('::ffff:192.168.1.1').ipv4_mapped,
+                         ipaddr.IPAddress('192.168.1.1'))
+        self.assertEqual(ipaddr.IPAddress('::c0a8:101').ipv4_mapped, None)
+        self.assertEqual(ipaddr.IPAddress('::ffff:c0a8:101').ipv4_mapped,
+                         ipaddr.IPAddress('192.168.1.1'))
+
     def testAddrExclude(self):
         addr1 = ipaddr.IPNetwork('10.1.1.0/24')
         addr2 = ipaddr.IPNetwork('10.1.1.0/26')
