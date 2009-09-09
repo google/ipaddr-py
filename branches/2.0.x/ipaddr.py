@@ -1360,7 +1360,10 @@ class BaseV6(object):
             fields.extend(reversed(octets))
 
         for field in fields:
-            ip_int = (ip_int << 16) + int(field, 16)
+            try:
+                ip_int = (ip_int << 16) + int(field, 16)
+            except ValueError:
+                raise IPv6IpValidationError(ip_str)
 
         return ip_int
 
@@ -1511,16 +1514,22 @@ class BaseV6(object):
         # hextets are between 0x0 and 0xFFFF.
         for hextet in ip_str.split(':'):
             if hextet.count('.') == 3:
-                # If we have an IPv4 mapped address, the IPv4 portion has to be
-                # at the end of the IPv6 portion.
+                # If we have an IPv4 mapped address, the IPv4 portion has to
+                # be at the end of the IPv6 portion.
                 if not ip_str.split(':')[-1] == hextet:
                     return False
                 try:
                     IPv4Network(hextet)
                 except IPv4IpValidationError:
                     return False
-            elif int(hextet, 16) < 0x0 or int(hextet, 16) > 0xFFFF:
-                return False
+            else:
+                try:
+                    # a value error here means that we got a bad hextet,
+                    # something like 0xzzzz
+                    if int(hextet, 16) < 0x0 or int(hextet, 16) > 0xFFFF:
+                        return False
+                except ValueError:
+                    return False
         return True
 
     def _is_shorthand_ip(self, ip_str=None):

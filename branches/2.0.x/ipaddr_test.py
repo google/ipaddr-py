@@ -77,6 +77,10 @@ class IpaddrUnitTest(unittest.TestCase):
                           'google.com')
         self.assertRaises(ipaddr.IPv6IpValidationError, ipaddr.IPv6Network,
                           '1.2.3.4')
+        self.assertRaises(ipaddr.IPv6IpValidationError, ipaddr.IPv6Network,
+                          '1234:axy::b')
+        self.assertRaises(ipaddr.IPv6IpValidationError, ipaddr.IPv6Address,
+                          '1234:axy::b')
 
     def testGetNetwork(self):
         self.assertEqual(int(self.ipv4.network), 16909056)
