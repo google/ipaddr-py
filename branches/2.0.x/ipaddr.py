@@ -85,7 +85,7 @@ class IPv6IpValidationError(Error):
         self._ip = ip
 
     def __str__(self):
-        return repr(self._ip) + ' is not a valid IPv6 network'
+        return repr(self._ip) + ' is not a valid IPv6 address'
 
 
 class IPv6NetmaskValidationError(Error):
@@ -137,12 +137,12 @@ def IPAddress(address, version=None):
 
     try:
         return IPv4Address(address)
-    except (IPv4IpValidationError, IPv6NetmaskValidationError):
+    except (IPv4IpValidationError, IPv4NetmaskValidationError):
         pass
 
     try:
         return IPv6Address(address)
-    except (IPv6ValidationError, IPv6NetmaskValidationError):
+    except (IPv6IpValidationError, IPv6NetmaskValidationError):
         pass
 
     raise ValueError('%r does not appear to be an IPv4 or IPv6 address' %
