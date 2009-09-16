@@ -267,7 +267,7 @@ def summarize_address_range(first, last):
             If the version is not 4 or 6.
 
     """
-    if not (isinstance(first, BaseIP) and isinstance(last, BaseIP)):
+    if not (isinstance(first, _BaseIP) and isinstance(last, _BaseIP)):
         raise IPTypeError('first and last must be IP addresses, not networks')
     if first.version != last.version:
         raise IPTypeError('IP addresses must be same version')
@@ -376,7 +376,7 @@ def collapse_address_list(addresses):
 
     # split IP addresses and networks
     for ip in addresses:
-        if isinstance(ip, BaseIP):
+        if isinstance(ip, _BaseIP):
             if ips and ips[-1]._version != ip._version:
                 raise IPTypeError('Can only collapse like-versioned objects -'
                                   ' v%d: %s, v%d %s' % (ips[-1]._version,
@@ -408,7 +408,7 @@ def collapse_address_list(addresses):
         addrs.extend(summarize_address_range(first, last))
 
     return _collapse_address_list_recursive(sorted(
-        addrs + nets, key=BaseNet._get_networks_key))
+        addrs + nets, key=_BaseNet._get_networks_key))
 
 # backwards compatibility
 CollapseAddrList = collapse_address_list
@@ -424,7 +424,7 @@ except NameError: # <Python2.6
     _compat_has_real_bytes = False
 
 
-class IPAddrBase(object):
+class _IPAddrBase(object):
 
     """The mother class."""
 
@@ -448,7 +448,7 @@ class IPAddrBase(object):
         return str(self)
 
 
-class BaseIP(IPAddrBase):
+class _BaseIP(_IPAddrBase):
 
     """A generic IP object.
 
@@ -514,7 +514,7 @@ class BaseIP(IPAddrBase):
         raise NotImplementedError('BaseIP has no version')
 
 
-class BaseNet(IPAddrBase):
+class _BaseNet(_IPAddrBase):
 
     """A generic IP object.
 
@@ -621,10 +621,10 @@ class BaseNet(IPAddrBase):
 
     def __contains__(self, other):
         # Easy case, dealing with networks.
-        if isinstance(other, BaseNet):
+        if isinstance(other, _BaseNet):
             return (int(self.network) <= int(other._ip) and
                     int(self.broadcast) >= int(other.broadcast))
-        elif isinstance(other, BaseIP):
+        elif isinstance(other, _BaseIP):
             # Check if we've got an Address
             return (int(self.network) <= int(other._ip) <=
                     int(self.broadcast))
@@ -754,7 +754,7 @@ class BaseNet(IPAddrBase):
                                           's1: %s s2: %s other: %s' %
                                           (str(s1), str(s2), str(other)))
 
-        return sorted(ret_addrs, key=BaseNet._get_networks_key)
+        return sorted(ret_addrs, key=_BaseNet._get_networks_key)
 
     def compare_networks(self, other):
         """Compare two IP objects.
@@ -972,7 +972,7 @@ class BaseNet(IPAddrBase):
     Contains = __contains__
 
 
-class BaseV4(object):
+class _BaseV4(object):
 
     """Base IPv4 object.
 
@@ -1074,7 +1074,7 @@ class BaseV4(object):
         Returns:
             A boolean, True if the address is within the
             reserved IPv4 Network range.
- 
+
        """
        return self in IPv4Network('240.0.0.0/4')
 
@@ -1122,7 +1122,7 @@ class BaseV4(object):
         return self in IPv4Network('169.254.0.0/16')
 
 
-class IPv4Address(BaseV4, BaseIP):
+class IPv4Address(_BaseV4, _BaseIP):
 
     """Represent and manipulate single IPv4 Addresses."""
 
@@ -1145,8 +1145,8 @@ class IPv4Address(BaseV4, BaseIP):
               an IPv4 address.
 
         """
-        BaseIP.__init__(self, address)
-        BaseV4.__init__(self, address)
+        _BaseIP.__init__(self, address)
+        _BaseV4.__init__(self, address)
 
         # Efficient constructor from integer.
         if isinstance(address, (int, long)):
@@ -1170,7 +1170,7 @@ class IPv4Address(BaseV4, BaseIP):
         self._ip = self._ip_int_from_string(addr_str)
 
 
-class IPv4Network(BaseV4, BaseNet):
+class IPv4Network(_BaseV4, _BaseNet):
 
     """This class represents and manipulates 32-bit IPv4 networks.
 
@@ -1213,8 +1213,8 @@ class IPv4Network(BaseV4, BaseNet):
               an IPv4 address.
 
         """
-        BaseNet.__init__(self, address)
-        BaseV4.__init__(self, address)
+        _BaseNet.__init__(self, address)
+        _BaseV4.__init__(self, address)
 
         # Efficient constructor from integer.
         if isinstance(address, (int, long)):
@@ -1316,7 +1316,7 @@ class IPv4Network(BaseV4, BaseNet):
     IsLinkLocal = lambda self: self.is_link_local
 
 
-class BaseV6(object):
+class _BaseV6(object):
 
     """Base IPv6 object.
 
@@ -1577,7 +1577,7 @@ class BaseV6(object):
         Returns:
             A boolean, True if the address is within one of the
             reserved IPv6 Network ranges.
- 
+
         """
         return (self in IPv6Network('::/8') or
                 self in IPv6Network('100::/8') or
@@ -1667,9 +1667,9 @@ class BaseV6(object):
             return IPv4Address(int('%s%s' % (hextets[-2], hextets[-1]), 16))
         except IPv4IpvalidationError:
             return None
-    
 
-class IPv6Address(BaseV6, BaseIP):
+
+class IPv6Address(_BaseV6, _BaseIP):
 
     """Represent and manipulate single IPv6 Addresses.
     """
@@ -1694,8 +1694,8 @@ class IPv6Address(BaseV6, BaseIP):
               an IPv6 address.
 
         """
-        BaseIP.__init__(self, address)
-        BaseV6.__init__(self, address)
+        _BaseIP.__init__(self, address)
+        _BaseV6.__init__(self, address)
 
         # Efficient constructor from integer.
         if isinstance(address, (int, long)):
@@ -1720,7 +1720,7 @@ class IPv6Address(BaseV6, BaseIP):
         self._ip = self._ip_int_from_string(addr_str)
 
 
-class IPv6Network(BaseV6, BaseNet):
+class IPv6Network(_BaseV6, _BaseNet):
 
     """This class represents and manipulates 128-bit IPv6 networks.
 
@@ -1761,8 +1761,8 @@ class IPv6Network(BaseV6, BaseNet):
               an IPv6 address.
 
         """
-        BaseNet.__init__(self, address)
-        BaseV6.__init__(self, address)
+        _BaseNet.__init__(self, address)
+        _BaseV6.__init__(self, address)
 
         # Efficient constructor from integer.
         if isinstance(address, (int, long)):
