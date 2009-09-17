@@ -1002,9 +1002,15 @@ class _BaseV4(object):
         Returns:
             The IP ip_str as an integer.
 
+        Raises:
+            IPv4IpValidationError: if the string isn't a valid IP string.
+
         """
         packed_ip = 0
-        for oc in ip_str.split('.'):
+        octets = ip_str.split('.')
+        if len(octets) != 4:
+            raise IPv4IpValidationError(ip_str)
+        for oc in octets:
             packed_ip = (packed_ip << 8) | int(oc)
         return packed_ip
 
@@ -1024,22 +1030,23 @@ class _BaseV4(object):
             ip_int >>= 8
         return '.'.join(octets)
 
-    def _is_valid_ip(self, ip_str):
+    def _is_valid_ip(self, address):
         """Validate the dotted decimal notation IP/netmask string.
 
         Args:
-            ip_str: A string, the IP ip_str.
+            address: A string, either representing a quad-dotted ip
+                or an integer which is a valid IPv4 IP address.
 
         Returns:
             A boolean, True if the string is a valid dotted decimal IP
             string.
 
         """
-        octets = ip_str.split('.')
+        octets = address.split('.')
         if len(octets) == 1:
             # We have an integer rather than a dotted decimal IP.
             try:
-                return int(ip_str) >= 0 and int(ip_str) <= self._ALL_ONES
+                return int(address) >= 0 and int(address) <= self._ALL_ONES
             except ValueError:
                 return False
 
@@ -1339,6 +1346,9 @@ class _BaseV6(object):
 
         Returns:
             A long, the IPv6 ip_str.
+
+        Raises:
+           IPv4IpValidationError: if ip_str isn't a valid IP Address.
 
         """
         if not ip_str:

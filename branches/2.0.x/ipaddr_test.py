@@ -319,6 +319,11 @@ class IpaddrUnitTest(unittest.TestCase):
                           'poopv6')
         self.assertRaises(ipaddr.IPv4IpValidationError,
                           ipaddr.IPv4Network, '1.2.3.4/32/24')
+        self.assertRaises(ipaddr.IPv4IpValidationError,
+                          ipaddr.IPv4Network, '10/8')
+        self.assertRaises(ipaddr.IPv6IpValidationError,
+                          ipaddr.IPv6Network, '10/8')
+        
 
     def testBadNetMask(self):
         self.assertRaises(ipaddr.IPv4NetmaskValidationError,
