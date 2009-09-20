@@ -1148,8 +1148,6 @@ class IPv4Address(_BaseV4, _BaseIP):
 
         Raises:
             IPv4IpValidationError: If ipaddr isn't a valid IPv4 address.
-            IPv4NetmaskValidationError: If the netmask isn't valid for
-              an IPv4 address.
 
         """
         _BaseIP.__init__(self, address)
@@ -1700,8 +1698,6 @@ class IPv6Address(_BaseV6, _BaseIP):
 
         Raises:
             IPv6IpValidationError: If address isn't a valid IPv6 address.
-            IPv6NetmaskValidationError: If the netmask isn't valid for
-              an IPv6 address.
 
         """
         _BaseIP.__init__(self, address)
