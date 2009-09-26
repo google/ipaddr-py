@@ -571,6 +571,17 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertTrue(ipaddr.IPNetwork('::1') <= ipaddr.IPNetwork('::2'))
         self.assertFalse(ipaddr.IPNetwork('::2') <= ipaddr.IPNetwork('::1'))
 
+    def testStrictNetworks(self):
+        self.assertRaises(ValueError, ipaddr.IPNetwork, '192.168.1.1/24',
+                          strict=True)
+        self.assertRaises(ValueError, ipaddr.IPNetwork, '::1/120', strict=True)
+
+    def testOverlaps(self):
+        other = ipaddr.IPv4Network('1.2.3.0/30')
+        other2 = ipaddr.IPv4Network('1.2.2.0/24')
+        self.assertTrue(self.ipv4.overlaps(other))
+        self.assertFalse(self.ipv4.overlaps(other2))
+
     def testEmbeddedIpv4(self):
         ipv4_string = '192.168.0.1'
         ipv4 = ipaddr.IPv4Network(ipv4_string)

@@ -42,7 +42,6 @@ class IPAddressExclusionError(Error):
 
 
 class IPAddressIPValidationError(Error):
-
     """Raised when a single address (v4 or v6) was given a network."""
 
     def __init__(self, ip):
@@ -149,7 +148,7 @@ def IPAddress(address, version=None):
                      address)
 
 
-def IPNetwork(address, version=None):
+def IPNetwork(address, version=None, strict=False):
     """Take an IP string/int and return an object of the correct type.
 
     Args:
@@ -166,22 +165,23 @@ def IPNetwork(address, version=None):
 
     Raises:
         ValueError: if the string passed isn't either a v4 or a v6
-          address.
+          address. Or if a strict network was requested and a strict
+          network wasn't given.
 
     """
     if version:
         if version == 4:
-            return IPv4Network(address)
+            return IPv4Network(address, strict)
         elif version == 6:
-            return IPv6Network(address)
+            return IPv6Network(address, strict)
 
     try:
-        return IPv4Network(address)
+        return IPv4Network(address, strict)
     except (IPv4IpValidationError, IPv4NetmaskValidationError):
         pass
 
     try:
-        return IPv6Network(address)
+        return IPv6Network(address, strict)
     except (IPv6IpValidationError, IPv6NetmaskValidationError):
         pass
 
@@ -630,6 +630,11 @@ class _BaseNet(_IPAddrBase):
                     int(self.broadcast))
         else:
             return IPNetwork(other) in self
+
+
+    def overlaps(self, other):
+        """Tell if self is partly contained in other."""
+        return self.network in other or self.broadcast in other
 
     @property
     def network(self):
@@ -1190,7 +1195,7 @@ class IPv4Network(_BaseV4, _BaseNet):
 
     """
 
-    def __init__(self, address):
+    def __init__(self, address, strict=False):
         """Instantiate a new IPv4 network object.
 
         Args:
@@ -1212,10 +1217,16 @@ class IPv4Network(_BaseV4, _BaseNet):
               IPv4Network(int(IPv4Network('192.168.1.1'))) ==
                 IPv4Network('192.168.1.1')
 
+            strict: A boolean. If true, ensure that we have been passed
+              A true network address, eg, 192.168.1.0/24 and not an
+              IP address on a network, eg, 192.168.1.1/24.
+
         Raises:
             IPv4IpValidationError: If ipaddr isn't a valid IPv4 address.
             IPv4NetmaskValidationError: If the netmask isn't valid for
               an IPv4 address.
+            ValueError: If strict was True and a network address was not
+              supplied.
 
         """
         _BaseNet.__init__(self, address)
@@ -1278,6 +1289,10 @@ class IPv4Network(_BaseV4, _BaseNet):
             self._prefixlen = 32
             self.netmask = IPv4Address(self._ip_int_from_prefix(
                 self._prefixlen))
+        if strict:
+            if self.ip != self.network:
+                raise ValueError('%s has host bits set' %
+                                 self.ip)
 
     def _is_hostmask(self, ip_str):
         """Test if the IP string is a hostmask (rather than a netmask).
@@ -1695,7 +1710,6 @@ class IPv6Address(_BaseV6, _BaseIP):
               IPv6Address(IPv6Address('2001:4860::')._ip) ==
                 IPv6Address('2001:4860::')
 
-
         Raises:
             IPv6IpValidationError: If address isn't a valid IPv6 address.
 
@@ -1741,7 +1755,7 @@ class IPv6Network(_BaseV6, _BaseNet):
     """
 
 
-    def __init__(self, address):
+    def __init__(self, address, strict=False):
         """Instantiate a new IPv6 Network object.
 
         Args:
@@ -1761,10 +1775,16 @@ class IPv6Network(_BaseV6, _BaseNet):
               IPv6Network(IPv6Network('2001:4860::')._ip) ==
                 IPv6Network('2001:4860::')
 
+            strict: A boolean. If true, ensure that we have been passed
+              A true network address, eg, 192.168.1.0/24 and not an
+              IP address on a network, eg, 192.168.1.1/24.
+
         Raises:
             IPv6IpValidationError: If address isn't a valid IPv6 address.
             IPv6NetmaskValidationError: If the netmask isn't valid for
               an IPv6 address.
+            ValueError: If strict was True and a network address was not
+              supplied.
 
         """
         _BaseNet.__init__(self, address)
@@ -1815,6 +1835,11 @@ class IPv6Network(_BaseV6, _BaseNet):
 
         self._ip = self._ip_int_from_string(addr[0])
         self.ip = IPv6Address(self._ip)
+
+        if strict:
+            if self.ip != self.network:
+                raise ValueError('%s has host bits set' %
+                                 self.ip)
 
 
     def _is_valid_netmask(self, prefixlen):
