@@ -439,12 +439,12 @@ class _IPAddrBase(object):
 
     @property
     def exploded(self):
-        """Return the longhand version of the IP address."""
+        """Return the longhand version of the IP address as a string."""
         return self._explode_shorthand_ip_string()
 
     @property
     def compressed(self):
-        """Return the shorthand version of the IP address."""
+        """Return the shorthand version of the IP address as a string."""
         return str(self)
 
 
@@ -1476,6 +1476,8 @@ class _BaseV6(object):
         """
         if not ip_str:
             ip_str = str(self)
+            if isinstance(self, _BaseNet):
+                ip_str = str(self.ip)
 
         if self._is_shorthand_ip(ip_str):
             new_ip = []

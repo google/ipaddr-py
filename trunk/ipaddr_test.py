@@ -804,6 +804,8 @@ class IpaddrUnitTest(unittest.TestCase):
         addr1 = ipaddr.IPv6Network('2001::1')
         self.assertEqual('2001:0000:0000:0000:0000:0000:0000:0001',
                          addr1._explode_shorthand_ip_string(str(addr1.ip)))
+        self.assertEqual('0000:0000:0000:0000:0000:0000:0000:0001',
+                         ipaddr.IPv6Network('::1/128').exploded)
 
     def testIntRepresentation(self):
         self.assertEqual(16909060, int(self.ipv4))
