@@ -634,7 +634,11 @@ class _BaseNet(_IPAddrBase):
 
     def overlaps(self, other):
         """Tell if self is partly contained in other."""
-        return self.network in other or self.broadcast in other
+        if not isinstance(other, (_BaseIP, _BaseNet)):
+            other = IPNetwork(other)
+        return self.network in other or self.broadcast in other or (
+            other.network in self or other.broadcast in self)
+    
 
     @property
     def network(self):
