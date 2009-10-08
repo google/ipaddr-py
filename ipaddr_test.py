@@ -583,9 +583,12 @@ class IpaddrUnitTest(unittest.TestCase):
     def testOverlaps(self):
         other = ipaddr.IPv4Network('1.2.3.0/30')
         other2 = ipaddr.IPv4Network('1.2.2.0/24')
+        other3 = ipaddr.IPv4Network('1.2.2.64/26')
         self.assertTrue(self.ipv4.overlaps(other))
         self.assertFalse(self.ipv4.overlaps(other2))
-
+        self.assertTrue(other2.overlaps(other3))
+        self.assertTrue(other2.overlaps('1.2.2.64/26'))
+        
     def testEmbeddedIpv4(self):
         ipv4_string = '192.168.0.1'
         ipv4 = ipaddr.IPv4Network(ipv4_string)
