@@ -81,6 +81,10 @@ class IpaddrUnitTest(unittest.TestCase):
                           '1234:axy::b')
         self.assertRaises(ipaddr.IPv6IpValidationError, ipaddr.IPv6Address,
                           '1234:axy::b')
+        self.assertRaises(ipaddr.IPv4IpValidationError,
+                          ipaddr.IPv4Address(1)._ip_int_from_string,
+                          '1.a.2.3')
+        self.assertEqual(False, ipaddr.IPv4Network(1)._is_hostmask('1.a.2.3'))
 
     def testGetNetwork(self):
         self.assertEqual(int(self.ipv4.network), 16909056)

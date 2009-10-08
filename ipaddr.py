@@ -1016,7 +1016,10 @@ class _BaseV4(object):
         if len(octets) != 4:
             raise IPv4IpValidationError(ip_str)
         for oc in octets:
-            packed_ip = (packed_ip << 8) | int(oc)
+            try:
+                packed_ip = (packed_ip << 8) | int(oc)
+            except ValueError:
+                raise IPv4IpValidationError(ip_str)
         return packed_ip
 
     def _string_from_ip_int(self, ip_int):
@@ -1304,7 +1307,10 @@ class IPv4Network(_BaseV4, _BaseNet):
             A boolean, True if the IP string is a hostmask.
 
         """
-        parts = [int(x) for x in ip_str.split('.')]
+        try:
+            parts = [int(x) for x in ip_str.split('.')]
+        except ValueError:
+            return False
         if parts[0] < parts[-1]:
             return True
         return False
