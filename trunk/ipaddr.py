@@ -566,8 +566,8 @@ class _BaseNet(_IPAddrBase):
         try:
             if self._version != other._version:
                 return self._version < other._version
-            if self._ip != other._ip:
-                return self._ip < other._ip
+            if self.network != other.network:
+                return self.network < other.network
             if self.netmask != other.netmask:
                 return self.netmask < other.netmask
             return False
@@ -578,8 +578,8 @@ class _BaseNet(_IPAddrBase):
         try:
             if self._version != other._version:
                 return self._version > other._version
-            if self._ip != other._ip:
-                return self._ip > other._ip
+            if self.network != other.network:
+                return self.network > other.network
             if self.netmask != other.netmask:
                 return self.netmask > other.netmask
             return False
@@ -601,7 +601,7 @@ class _BaseNet(_IPAddrBase):
     def __eq__(self, other):
         try:
             return (self._version == other._version
-                    and self._ip == other._ip
+                    and self.network == other.network
                     and int(self.netmask) == int(other.netmask))
         except AttributeError:
             return NotImplemented
@@ -617,7 +617,7 @@ class _BaseNet(_IPAddrBase):
                            str(self._prefixlen))
 
     def __hash__(self):
-        return hash(self._ip ^ int(self.netmask))
+        return hash(int(self.network) ^ int(self.netmask))
 
     def __contains__(self, other):
         # Easy case, dealing with networks.
