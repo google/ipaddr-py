@@ -507,7 +507,7 @@ class _BaseIP(_IPAddrBase):
         return  '%s' % self._string_from_ip_int(self._ip)
 
     def __hash__(self):
-        return hash(self._ip)
+        return hash(hex(self._ip))
 
     @property
     def version(self):
