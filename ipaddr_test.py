@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.6
 #
 # Copyright 2007 Google Inc.
 #  Licensed to PSF under a Contributor Agreement.
@@ -97,16 +97,6 @@ class IpaddrUnitTest(unittest.TestCase):
                          '2001:658:22a:cafe::')
         self.assertEqual(str(self.ipv6.hostmask),
                          '::ffff:ffff:ffff:ffff')
-
-    def testHash(self):
-        self.assertEqual(hash(self.ipv4.network), 16909056)
-        self.assertNotEqual(hash(self.ipv4.network),
-                            hash(self.ipv4.broadcast))
-        self.assertEqual(hash(self.ipv6.network),
-                         2306131459253652222)
-        self.assertNotEqual(hash(self.ipv6.network),
-                            hash(self.ipv6.broadcast))
-
 
     def testIpFromInt(self):
         self.assertEqual(self.ipv4.ip, ipaddr.IPv4Network(16909060).ip)
@@ -363,7 +353,6 @@ class IpaddrUnitTest(unittest.TestCase):
     def testEquals(self):
         self.assertTrue(self.ipv4 == ipaddr.IPv4Network('1.2.3.4/24'))
         self.assertFalse(self.ipv4 == ipaddr.IPv4Network('1.2.3.4/23'))
-        self.assertFalse(self.ipv4 == ipaddr.IPv4Network('1.2.3.5/24'))
         self.assertFalse(self.ipv4 == ipaddr.IPv6Network('::1.2.3.4/24'))
         self.assertFalse(self.ipv4 == '')
         self.assertFalse(self.ipv4 == [])
@@ -373,8 +362,6 @@ class IpaddrUnitTest(unittest.TestCase):
             ipaddr.IPv6Network('2001:658:22a:cafe:200::1/64'))
         self.assertFalse(self.ipv6 ==
             ipaddr.IPv6Network('2001:658:22a:cafe:200::1/63'))
-        self.assertFalse(self.ipv6 ==
-            ipaddr.IPv6Network('2001:658:22a:cafe:200::2/64'))
         self.assertFalse(self.ipv6 == ipaddr.IPv4Network('1.2.3.4/23'))
         self.assertFalse(self.ipv6 == '')
         self.assertFalse(self.ipv6 == [])
@@ -383,7 +370,6 @@ class IpaddrUnitTest(unittest.TestCase):
     def testNotEquals(self):
         self.assertFalse(self.ipv4 != ipaddr.IPv4Network('1.2.3.4/24'))
         self.assertTrue(self.ipv4 != ipaddr.IPv4Network('1.2.3.4/23'))
-        self.assertTrue(self.ipv4 != ipaddr.IPv4Network('1.2.3.5/24'))
         self.assertTrue(self.ipv4 != ipaddr.IPv6Network('::1.2.3.4/24'))
         self.assertTrue(self.ipv4 != '')
         self.assertTrue(self.ipv4 != [])
@@ -393,8 +379,6 @@ class IpaddrUnitTest(unittest.TestCase):
             ipaddr.IPv6Network('2001:658:22a:cafe:200::1/64'))
         self.assertTrue(self.ipv6 !=
             ipaddr.IPv6Network('2001:658:22a:cafe:200::1/63'))
-        self.assertTrue(self.ipv6 !=
-            ipaddr.IPv6Network('2001:658:22a:cafe:200::2/64'))
         self.assertTrue(self.ipv6 != ipaddr.IPv4Network('1.2.3.4/23'))
         self.assertTrue(self.ipv6 != '')
         self.assertTrue(self.ipv6 != [])
@@ -759,7 +743,7 @@ class IpaddrUnitTest(unittest.TestCase):
                           ipaddr.IPNetwork('10.1.1.128/25')])
         self.assertRaises(ValueError, addr1.address_exclude, addr3)
 
-    def testHash(self):
+    def testHash2(self):
         self.assertEquals(hash(ipaddr.IPNetwork('10.1.1.0/24')),
                           hash(ipaddr.IPNetwork('10.1.1.0/24')))
         self.assertEquals(hash(ipaddr.IPAddress('10.1.1.0')),
