@@ -891,6 +891,16 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertTrue(self.ipv6._cache.has_key('broadcast'))
         self.assertTrue(self.ipv6._cache.has_key('hostmask'))
 
+    def testIsValidIp(self):
+        ip = ipaddr.IPv6Address('::')
+        self.assertTrue(ip._is_valid_ip('2001:658:22a:cafe:200::1'))
+        self.assertFalse(ip._is_valid_ip('2001:658:22a::::1'))
+        self.assertFalse(ip._is_valid_ip(':658:22a:cafe:200::1'))
+        self.assertFalse(ip._is_valid_ip('2001:658:22a:cafe:200:'))
+        self.assertFalse(ip._is_valid_ip('2001:658:22a:cafe:200:127.0.0.1::1'))
+        self.assertFalse(ip._is_valid_ip('2001:658:22a:cafe:200::127.0.1'))
+        self.assertFalse(ip._is_valid_ip('2001:658:22a:zzzz:200::1'))
+        self.assertFalse(ip._is_valid_ip('2001:658:22a:cafe1:200::1'))
 
 if __name__ == '__main__':
     unittest.main()
