@@ -620,25 +620,19 @@ class _BaseNet(_IPAddrBase):
         return hash(int(self.network) ^ int(self.netmask))
 
     def __contains__(self, other):
-        # Easy case, dealing with networks.
+        # dealing with another network.
         if isinstance(other, _BaseNet):
             return (int(self.network) <= int(other._ip) and
                     int(self.broadcast) >= int(other.broadcast))
-        elif isinstance(other, _BaseIP):
-            # Check if we've got an Address
+        # dealing with another address
+        else:
             return (int(self.network) <= int(other._ip) <=
                     int(self.broadcast))
-        else:
-            return IPNetwork(other) in self
-
 
     def overlaps(self, other):
         """Tell if self is partly contained in other."""
-        if not isinstance(other, (_BaseIP, _BaseNet)):
-            other = IPNetwork(other)
         return self.network in other or self.broadcast in other or (
             other.network in self or other.broadcast in self)
-    
 
     @property
     def network(self):

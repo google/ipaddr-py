@@ -297,11 +297,8 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertTrue(self.ipv4 in self.ipv4)
         self.assertTrue(self.ipv6 in self.ipv6)
         # We can test addresses and string as well.
-        addr1str = '1.2.3.37'
-        addr1 = ipaddr.IPv4Address(addr1str)
+        addr1 = ipaddr.IPv4Address('1.2.3.37')
         self.assertTrue(addr1 in self.ipv4)
-        self.assertTrue(int(addr1) in self.ipv4)
-        self.assertTrue(addr1str in self.ipv4)
 
     def testBadAddress(self):
         self.assertRaises(ipaddr.IPv4IpValidationError, ipaddr.IPv4Network,
@@ -571,7 +568,6 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertTrue(self.ipv4.overlaps(other))
         self.assertFalse(self.ipv4.overlaps(other2))
         self.assertTrue(other2.overlaps(other3))
-        self.assertTrue(other2.overlaps('1.2.2.64/26'))
         
     def testEmbeddedIpv4(self):
         ipv4_string = '192.168.0.1'
