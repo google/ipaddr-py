@@ -1836,9 +1836,6 @@ class IPv6Network(_BaseV6, _BaseNet):
 
         self.netmask = IPv6Address(self._ip_int_from_prefix(self._prefixlen))
 
-        if not self._is_valid_ip(addr[0]):
-            raise IPv6IpValidationError(addr[0])
-
         self._ip = self._ip_int_from_string(addr[0])
         self.ip = IPv6Address(self._ip)
 
