@@ -215,6 +215,9 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(self.ipv6.supernet(prefixlen_diff=2),
                          self.ipv6.supernet(new_prefix=62))
 
+    def testIterSubnets(self):
+        self.assertEqual(self.ipv4.subnet(), list(self.ipv4.iter_subnets()))
+        self.assertEqual(self.ipv6.subnet(), list(self.ipv6.iter_subnets()))
 
     def testFancySubnetting(self):
         self.assertEqual(sorted(self.ipv4.subnet(prefixlen_diff=3)),
