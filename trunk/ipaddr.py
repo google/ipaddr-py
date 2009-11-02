@@ -867,11 +867,12 @@ class _BaseNet(_IPAddrBase):
             prefixlen = self._prefixlen
         return self._string_from_ip_int(self._ip_int_from_prefix(prefixlen))
 
-    def subnet(self, prefixlen_diff=1, new_prefix=None):
+    def iter_subnets(self, prefixlen_diff=1, new_prefix=None):
         """The subnets which join to make the current subnet.
 
         In the case that self contains only one IP
-        (self._prefixlen == 32), return a list with just ourself.
+        (self._prefixlen == 32 for IPv4 or self._prefixlen == 128
+        for IPv6), return a list with just ourself.
 
         Args:
             prefixlen_diff: An integer, the amount the prefix length
@@ -882,7 +883,7 @@ class _BaseNet(_IPAddrBase):
               This should not be set if prefixlen_diff is also set.
 
         Returns:
-            A list of IPv6 objects.
+            An iterator of IPv(4|6) objects.
 
         Raises:
             PrefixlenDiffInvalidError: The prefixlen_diff is too small
@@ -893,7 +894,8 @@ class _BaseNet(_IPAddrBase):
 
         """
         if self._prefixlen == self._max_prefixlen:
-            return [self]
+            yield self
+            return
 
         if new_prefix is not None:
             if new_prefix < self._prefixlen:
@@ -914,18 +916,22 @@ class _BaseNet(_IPAddrBase):
         first = IPNetwork('%s/%s' % (str(self.network),
                                      str(self._prefixlen + prefixlen_diff)),
                          version=self._version)
-        subnets = [first]
+
+        yield first
         current = first
         while True:
             broadcast = current.broadcast
             if broadcast == self.broadcast:
-                break
+                return
             new_addr = IPAddress(int(broadcast) + 1, version=self._version)
             current = IPNetwork('%s/%s' % (str(new_addr), str(new_prefixlen)),
                                 version=self._version)
-            subnets.append(current)
 
-        return subnets
+            yield current
+
+    def subnet(self, prefixlen_diff=1, new_prefix=None):
+        """Return a list of subnets, rather than an interator."""
+        return list(self.iter_subnets(prefixlen_diff, new_prefix))
 
     def supernet(self, prefixlen_diff=1, new_prefix=None):
         """The supernet containing the current network.
