@@ -1202,6 +1202,9 @@ class IPv4Network(_BaseV4, _BaseNet):
 
     """
 
+    # the valid octets for host and netmasks. only useful for IPv4.
+    _valid_mask_octets = set((255, 254, 252, 248, 240, 224, 192, 128, 0))
+
     def __init__(self, address, strict=False):
         """Instantiate a new IPv4 network object.
 
@@ -1275,14 +1278,15 @@ class IPv4Network(_BaseV4, _BaseNet):
             mask = addr[1].split('.')
             if len(mask) == 4:
                 # We have dotted decimal netmask.
-                if not self._is_valid_netmask(addr[1]):
-                    raise IPv4NetmaskValidationError(addr[1])
-                if self._is_hostmask(addr[1]):
+                if self._is_valid_netmask(addr[1]):
+                    self.netmask = IPv4Address(self._ip_int_from_string(
+                            addr[1]))
+                elif self._is_hostmask(addr[1]):
                     self.netmask = IPv4Address(
                         self._ip_int_from_string(addr[1]) ^ self._ALL_ONES)
                 else:
-                    self.netmask = IPv4Address(self._ip_int_from_string(
-                        addr[1]))
+                    raise IPv4NetmaskValidationError('%s is not a valid netmask'
+                                                     % addr[1])
 
                 self._prefixlen = self._prefix_from_ip_int(int(self.netmask))
             else:
@@ -1311,14 +1315,17 @@ class IPv4Network(_BaseV4, _BaseNet):
             A boolean, True if the IP string is a hostmask.
 
         """
+        bits = ip_str.split('.')
         try:
-            parts = [int(x) for x in ip_str.split('.')]
+            parts = [int(x) for x in bits if int(x) in self._valid_mask_octets]
         except ValueError:
+            return False
+        if len(parts) != len(bits):
             return False
         if parts[0] < parts[-1]:
             return True
         return False
-
+    
     def _is_valid_netmask(self, netmask):
         """Verify that the netmask is valid.
 
@@ -1331,8 +1338,14 @@ class IPv4Network(_BaseV4, _BaseNet):
             netmask.
 
         """
-        if len(netmask.split('.')) == 4:
-            return self._is_valid_ip(netmask)
+        mask = netmask.split('.')
+        if len(mask) == 4:
+            if [x for x in mask if int(x) not in self._valid_mask_octets]:
+                return False
+            if [x for idx, y in enumerate(mask) if idx > 0 and
+                y > mask[idx - 1]]:
+                return False
+            return True
         try:
             netmask = int(netmask)
         except ValueError:
