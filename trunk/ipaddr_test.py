@@ -326,7 +326,8 @@ class IpaddrUnitTest(unittest.TestCase):
                           ipaddr.IPv4Network, '1.2.3.4/33')
         self.assertRaises(ipaddr.IPv4NetmaskValidationError,
                           ipaddr.IPv4Network, '1.2.3.4/254.254.255.256')
-
+        self.assertRaises(ipaddr.IPv4NetmaskValidationError,
+                          ipaddr.IPv4Network, '1.1.1.1/240.255.0.0')
         self.assertRaises(ipaddr.IPv6NetmaskValidationError,
                           ipaddr.IPv6Network, '::1/')
         self.assertRaises(ipaddr.IPv6NetmaskValidationError,
