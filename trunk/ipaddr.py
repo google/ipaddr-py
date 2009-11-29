@@ -26,86 +26,11 @@ __version__ = 'trunk'
 
 import struct
 
-class Error(Exception):
 
-    """Base class for exceptions."""
-
-
-class IPTypeError(Error):
-
-    """Tried to perform a v4 action on v6 object or vice versa."""
+class AddressValueError(ValueError): pass
 
 
-class IPAddressExclusionError(Error):
-
-    """An Error we should never see occurred in address exclusion."""
-
-
-class IPAddressIPValidationError(Error):
-    """Raised when a single address (v4 or v6) was given a network."""
-
-    def __init__(self, ip):
-        Error.__init__(self)
-        self._ip = ip
-
-    def __str__(self):
-        return "%s is not a valid address (hint, it's probably a network)" % (
-            repr(self._ip))
-
-class IPv4IpValidationError(Error):
-
-    """Raised when an IPv4 address is invalid."""
-
-    def __init__(self, ip):
-        Error.__init__(self)
-        self._ip = ip
-
-    def __str__(self):
-        return repr(self._ip) + ' is not a valid IPv4 address'
-
-class IPv4NetmaskValidationError(Error):
-
-    """Raised when a netmask is invalid."""
-
-    def __init__(self, netmask):
-        Error.__init__(self)
-        self.netmask = netmask
-
-    def __str__(self):
-        return repr(self.netmask) + ' is not a valid IPv4 netmask'
-
-
-class IPv6IpValidationError(Error):
-
-    """Raised when an IPv6 address is invalid."""
-
-    def __init__(self, ip):
-        Error.__init__(self)
-        self._ip = ip
-
-    def __str__(self):
-        return repr(self._ip) + ' is not a valid IPv6 address'
-
-
-class IPv6NetmaskValidationError(Error):
-
-    """Raised when an IPv6 netmask is invalid."""
-
-    def __init__(self, netmask):
-        Error.__init__(self)
-        self.netmask = netmask
-
-    def __str__(self):
-        return repr(self.netmask) + ' is not a valid IPv6 netmask'
-
-
-class PrefixlenDiffInvalidError(Error):
-
-    """Raised when Sub/Supernets is called with a bad prefixlen_diff."""
-
-    def __init__(self, error_str):
-        Error.__init__(self)
-        self.error_str = error_str
+class NetmaskValueError(ValueError): pass
 
 
 def IPAddress(address, version=None):
@@ -136,12 +61,12 @@ def IPAddress(address, version=None):
 
     try:
         return IPv4Address(address)
-    except (IPv4IpValidationError, IPv4NetmaskValidationError):
+    except (AddressValueError, NetmaskValueError):
         pass
 
     try:
         return IPv6Address(address)
-    except (IPv6IpValidationError, IPv6NetmaskValidationError):
+    except (AddressValueError, NetmaskValueError):
         pass
 
     raise ValueError('%r does not appear to be an IPv4 or IPv6 address' %
@@ -177,12 +102,12 @@ def IPNetwork(address, version=None, strict=False):
 
     try:
         return IPv4Network(address, strict)
-    except (IPv4IpValidationError, IPv4NetmaskValidationError):
+    except (AddressValueError, NetmaskValueError):
         pass
 
     try:
         return IPv6Network(address, strict)
-    except (IPv6IpValidationError, IPv6NetmaskValidationError):
+    except (AddressValueError, NetmaskValueError):
         pass
 
     raise ValueError('%r does not appear to be an IPv4 or IPv6 network' %
@@ -259,7 +184,7 @@ def summarize_address_range(first, last):
         IPv6Network's.
 
     Raise:
-        IPTypeError:
+        TypeError:
             If the first and last objects are not IP addresses.
             If the first and last objects are not the same version.
         ValueError:
@@ -268,9 +193,9 @@ def summarize_address_range(first, last):
 
     """
     if not (isinstance(first, _BaseIP) and isinstance(last, _BaseIP)):
-        raise IPTypeError('first and last must be IP addresses, not networks')
+        raise TypeError('first and last must be IP addresses, not networks')
     if first.version != last.version:
-        raise IPTypeError('IP addresses must be same version')
+        raise TypeError('IP addresses must be same version')
     if first > last:
         raise ValueError('last IP address must be greater than first')
 
@@ -366,7 +291,7 @@ def collapse_address_list(addresses):
         were passed.
 
     Raises:
-        IPTypeError: If passed a list of mixed version objects.
+        TypeError: If passed a list of mixed version objects.
 
     """
     i = 0
@@ -378,24 +303,24 @@ def collapse_address_list(addresses):
     for ip in addresses:
         if isinstance(ip, _BaseIP):
             if ips and ips[-1]._version != ip._version:
-                raise IPTypeError('Can only collapse like-versioned objects -'
-                                  ' v%d: %s, v%d %s' % (ips[-1]._version,
-                                                        str(ips[-1]),
-                                                        ip._version, str(ip)))
+                raise TypeError('Can only collapse like-versioned objects -'
+                                ' v%d: %s, v%d %s' % (ips[-1]._version,
+                                                      str(ips[-1]),
+                                                      ip._version, str(ip)))
             ips.append(ip)
         elif ip._prefixlen == ip._max_prefixlen:
             if ips and ips[-1]._version != ip._version:
-                raise IPTypeError('Can only collapse like-versioned objects -'
-                                  ' v%d: %s, v%d %s' % (ips[-1]._version,
-                                                        str(ips[-1]),
-                                                        ip._version, str(ip)))
+                raise TypeError('Can only collapse like-versioned objects -'
+                                ' v%d: %s, v%d %s' % (ips[-1]._version,
+                                                      str(ips[-1]),
+                                                      ip._version, str(ip)))
             ips.append(ip.ip)
         else:
             if nets and nets[-1]._version != ip._version:
-                raise IPTypeError('Can only collapse like-versioned objects -'
-                                  ' v%d: %s, v%d %s' % (ips[-1]._version,
-                                                        str(ips[-1]),
-                                                        ip._version, str(ip)))
+                raise TypeError('Can only collapse like-versioned objects -'
+                                ' v%d: %s, v%d %s' % (ips[-1]._version,
+                                                      str(ips[-1]),
+                                                      ip._version, str(ip)))
             nets.append(ip)
 
     # sort and dedup
@@ -459,7 +384,7 @@ class _BaseIP(_IPAddrBase):
 
     def __init__(self, address):
         if '/' in str(address):
-            raise IPAddressIPValidationError(address)
+            raise AddressValueError(address)
 
     def __eq__(self, other):
         try:
@@ -713,16 +638,17 @@ class _BaseNet(_IPAddrBase):
             other.
 
         Raises:
-            IPTypeError: If self and other are of difffering address
+            TypeError: If self and other are of difffering address
               versions.
-            IPAddressExclusionError: There was some unknown error in the
+            ValueError: There was some unknown error in the
               address exclusion process.  This likely points to a bug
               elsewhere in this code.
-            ValueError: If other is not completely contained by self.
+                OR
+              If other is not completely contained by self.
 
         """
         if not self._version == other._version:
-            raise IPTypeError("%s and %s aren't of the same version" % (
+            raise TypeError("%s and %s aren't of the same version" % (
                 str(self), str(other)))
 
         if other not in self:
@@ -744,18 +670,18 @@ class _BaseNet(_IPAddrBase):
                 s1, s2 = s2.subnet()
             else:
                 # If we got here, there's a bug somewhere.
-                raise IPAddressExclusionError('Error performing exclusion: '
-                                              's1: %s s2: %s other: %s' %
-                                              (str(s1), str(s2), str(other)))
+                raise ValueError('Error performing exclusion: '
+                                 's1: %s s2: %s other: %s' %
+                                 (str(s1), str(s2), str(other)))
         if s1 == other:
             ret_addrs.append(s2)
         elif s2 == other:
             ret_addrs.append(s1)
         else:
             # If we got here, there's a bug somewhere.
-            raise IPAddressExclusionError('Error performing exclusion: '
-                                          's1: %s s2: %s other: %s' %
-                                          (str(s1), str(s2), str(other)))
+            raise ValueError('Error performing exclusion: '
+                             's1: %s s2: %s other: %s' %
+                             (str(s1), str(s2), str(other)))
 
         return sorted(ret_addrs, key=_BaseNet._get_networks_key)
 
@@ -886,11 +812,11 @@ class _BaseNet(_IPAddrBase):
             An iterator of IPv(4|6) objects.
 
         Raises:
-            PrefixlenDiffInvalidError: The prefixlen_diff is too small
-              or too large.
-            ValueError: prefixlen_diff and new_prefix are both set or
-              new_prefix is a smaller number than the current prefix
-              (smaller number means a larger network)
+            ValueError: The prefixlen_diff is too small or too large.
+                OR
+            prefixlen_diff and new_prefix are both set or new_prefix
+              is a smaller number than the current prefix (smaller
+              number means a larger network)
 
         """
         if self._prefixlen == self._max_prefixlen:
@@ -905,11 +831,11 @@ class _BaseNet(_IPAddrBase):
             prefixlen_diff = new_prefix - self._prefixlen
 
         if prefixlen_diff < 0:
-            raise PrefixlenDiffInvalidError('prefix length diff must be > 0')
+            raise ValueError('prefix length diff must be > 0')
         new_prefixlen = self._prefixlen + prefixlen_diff
 
         if not self._is_valid_netmask(str(new_prefixlen)):
-            raise PrefixlenDiffInvalidError(
+            raise ValueError(
                 'prefix length diff %d is invalid for netblock %s' % (
                     new_prefixlen, str(self)))
 
@@ -946,12 +872,12 @@ class _BaseNet(_IPAddrBase):
             An IPv4 network object.
 
         Raises:
-            PrefixlenDiffInvalidError: If
-              self.prefixlen - prefixlen_diff < 0. I.e., you have a
+            ValueErro: If self.prefixlen - prefixlen_diff < 0. I.e., you have a
               negative prefix length.
-            ValueError: prefixlen_diff and new_prefix are both set or
-              new_prefix is a larger number than the current prefix
-              (larger number means a smaller network)
+                OR
+            If prefixlen_diff and new_prefix are both set or new_prefix is a
+              larger number than the current prefix (larger number means a
+              smaller network)
 
         """
         if self._prefixlen == 0:
@@ -966,7 +892,7 @@ class _BaseNet(_IPAddrBase):
 
 
         if self.prefixlen - prefixlen_diff < 0:
-            raise PrefixlenDiffInvalidError(
+            raise ValueError(
                 'current prefixlen is %d, cannot have a prefixlen_diff of %d' %
                 (self.prefixlen, prefixlen_diff))
         return IPNetwork('%s/%s' % (str(self.network),
@@ -1018,12 +944,12 @@ class _BaseV4(object):
         packed_ip = 0
         octets = ip_str.split('.')
         if len(octets) != 4:
-            raise IPv4IpValidationError(ip_str)
+            raise AddressValueError(ip_str)
         for oc in octets:
             try:
                 packed_ip = (packed_ip << 8) | int(oc)
             except ValueError:
-                raise IPv4IpValidationError(ip_str)
+                raise AddressValueError(ip_str)
         return packed_ip
 
     def _string_from_ip_int(self, ip_int):
@@ -1159,7 +1085,7 @@ class IPv4Address(_BaseV4, _BaseIP):
                 IPv4Address('192.168.1.1')
 
         Raises:
-            IPv4IpValidationError: If ipaddr isn't a valid IPv4 address.
+            AddressValueError: If ipaddr isn't a valid IPv4 address.
 
         """
         _BaseIP.__init__(self, address)
@@ -1169,7 +1095,7 @@ class IPv4Address(_BaseV4, _BaseIP):
         if isinstance(address, (int, long)):
             self._ip = address
             if address < 0 or address > self._ALL_ONES:
-                raise IPv4IpValidationError(address)
+                raise AddressValueError(address)
             return
 
         # Constructing from a packed address
@@ -1182,7 +1108,7 @@ class IPv4Address(_BaseV4, _BaseIP):
         # which converts into a formatted IP string.
         addr_str = str(address)
         if not self._is_valid_ip(addr_str):
-            raise IPv4IpValidationError(addr_str)
+            raise AddressValueError(addr_str)
 
         self._ip = self._ip_int_from_string(addr_str)
 
@@ -1232,8 +1158,8 @@ class IPv4Network(_BaseV4, _BaseNet):
               IP address on a network, eg, 192.168.1.1/24.
 
         Raises:
-            IPv4IpValidationError: If ipaddr isn't a valid IPv4 address.
-            IPv4NetmaskValidationError: If the netmask isn't valid for
+            AddressValueError: If ipaddr isn't a valid IPv4 address.
+            NetmaskValueError: If the netmask isn't valid for
               an IPv4 address.
             ValueError: If strict was True and a network address was not
               supplied.
@@ -1249,7 +1175,7 @@ class IPv4Network(_BaseV4, _BaseNet):
             self._prefixlen = 32
             self.netmask = IPv4Address(self._ALL_ONES)
             if address < 0 or address > self._ALL_ONES:
-                raise IPv4IpValidationError(address)
+                raise AddressValueError(address)
             return
 
         # Constructing from a packed address
@@ -1266,10 +1192,10 @@ class IPv4Network(_BaseV4, _BaseNet):
         addr = str(address).split('/')
 
         if len(addr) > 2:
-            raise IPv4IpValidationError(address)
+            raise AddressValueError(address)
 
         if not self._is_valid_ip(addr[0]):
-            raise IPv4IpValidationError(addr[0])
+            raise AddressValueError(addr[0])
 
         self._ip = self._ip_int_from_string(addr[0])
         self.ip = IPv4Address(self._ip)
@@ -1285,14 +1211,14 @@ class IPv4Network(_BaseV4, _BaseNet):
                     self.netmask = IPv4Address(
                         self._ip_int_from_string(addr[1]) ^ self._ALL_ONES)
                 else:
-                    raise IPv4NetmaskValidationError('%s is not a valid netmask'
+                    raise NetmaskValueError('%s is not a valid netmask'
                                                      % addr[1])
 
                 self._prefixlen = self._prefix_from_ip_int(int(self.netmask))
             else:
                 # We have a netmask in prefix length form.
                 if not self._is_valid_netmask(addr[1]):
-                    raise IPv4NetmaskValidationError(addr[1])
+                    raise NetmaskValueError(addr[1])
                 self._prefixlen = int(addr[1])
                 self.netmask = IPv4Address(self._ip_int_from_prefix(
                     self._prefixlen))
@@ -1384,7 +1310,7 @@ class _BaseV6(object):
             A long, the IPv6 ip_str.
 
         Raises:
-           IPv4IpValidationError: if ip_str isn't a valid IP Address.
+           AddressValueError: if ip_str isn't a valid IP Address.
 
         """
         if not ip_str:
@@ -1409,7 +1335,7 @@ class _BaseV6(object):
             try:
                 ip_int = (ip_int << 16) + int(field, 16)
             except ValueError:
-                raise IPv6IpValidationError(ip_str)
+                raise AddressValueError(ip_str)
 
         return ip_int
 
@@ -1568,7 +1494,7 @@ class _BaseV6(object):
                     return False
                 try:
                     IPv4Network(hextet)
-                except IPv4IpValidationError:
+                except AddressValueError:
                     return False
             else:
                 try:
@@ -1746,7 +1672,7 @@ class IPv6Address(_BaseV6, _BaseIP):
         if isinstance(address, (int, long)):
             self._ip = address
             if address < 0 or address > self._ALL_ONES:
-                raise IPv6IpValidationError(address)
+                raise AddressValueError(address)
             return
 
         # Constructing from a packed address
@@ -1760,7 +1686,7 @@ class IPv6Address(_BaseV6, _BaseIP):
         # which converts into a formatted IP string.
         addr_str = str(address)
         if not addr_str:
-            raise IPv6IpValidationError('')
+            raise AddressValueError('')
 
         self._ip = self._ip_int_from_string(addr_str)
 
@@ -1805,8 +1731,8 @@ class IPv6Network(_BaseV6, _BaseNet):
               IP address on a network, eg, 192.168.1.1/24.
 
         Raises:
-            IPv6IpValidationError: If address isn't a valid IPv6 address.
-            IPv6NetmaskValidationError: If the netmask isn't valid for
+            AddressValueError: If address isn't a valid IPv6 address.
+            NetmaskValueError: If the netmask isn't valid for
               an IPv6 address.
             ValueError: If strict was True and a network address was not
               supplied.
@@ -1822,7 +1748,7 @@ class IPv6Network(_BaseV6, _BaseNet):
             self._prefixlen = 128
             self.netmask = IPv6Address(self._ALL_ONES)
             if address < 0 or address > self._ALL_ONES:
-                raise IPv6IpValidationError(address)
+                raise AddressValueError(address)
             return
 
         # Constructing from a packed address
@@ -1840,16 +1766,16 @@ class IPv6Network(_BaseV6, _BaseNet):
         addr = str(address).split('/')
 
         if len(addr) > 2:
-            raise IPv6IpValidationError(ipaddr)
+            raise AddressValueError(ipaddr)
 
         if not self._is_valid_ip(addr[0]):
-            raise IPv6IpValidationError(addr[0])
+            raise AddressValueError(addr[0])
 
         if len(addr) == 2:
             if self._is_valid_netmask(addr[1]):
                 self._prefixlen = int(addr[1])
             else:
-                raise IPv6NetmaskValidationError(addr[1])
+                raise NetmaskValueError(addr[1])
         else:
             self._prefixlen = 128
 
