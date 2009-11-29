@@ -27,10 +27,12 @@ __version__ = 'trunk'
 import struct
 
 
-class AddressValueError(ValueError): pass
+class AddressValueError(ValueError):
+    """A Value Error related to the address."""
 
 
-class NetmaskValueError(ValueError): pass
+class NetmaskValueError(ValueError):
+    """A Value Error related to the netmask."""
 
 
 def IPAddress(address, version=None):
@@ -640,11 +642,10 @@ class _BaseNet(_IPAddrBase):
         Raises:
             TypeError: If self and other are of difffering address
               versions.
-            ValueError: There was some unknown error in the
-              address exclusion process.  This likely points to a bug
-              elsewhere in this code.
-                OR
-              If other is not completely contained by self.
+            RunTimeError: There was some unknown error in the address
+              exclusion process.  This likely points to a bug elsewhere
+              in this code.
+            ValueError: If other is not completely contained by self.
 
         """
         if not self._version == other._version:
@@ -670,18 +671,18 @@ class _BaseNet(_IPAddrBase):
                 s1, s2 = s2.subnet()
             else:
                 # If we got here, there's a bug somewhere.
-                raise ValueError('Error performing exclusion: '
-                                 's1: %s s2: %s other: %s' %
-                                 (str(s1), str(s2), str(other)))
+                raise RunTimeError('Error performing exclusion: '
+                                   's1: %s s2: %s other: %s' %
+                                   (str(s1), str(s2), str(other)))
         if s1 == other:
             ret_addrs.append(s2)
         elif s2 == other:
             ret_addrs.append(s1)
         else:
             # If we got here, there's a bug somewhere.
-            raise ValueError('Error performing exclusion: '
-                             's1: %s s2: %s other: %s' %
-                             (str(s1), str(s2), str(other)))
+            raise RunTimeError('Error performing exclusion: '
+                               's1: %s s2: %s other: %s' %
+                               (str(s1), str(s2), str(other)))
 
         return sorted(ret_addrs, key=_BaseNet._get_networks_key)
 
@@ -872,7 +873,7 @@ class _BaseNet(_IPAddrBase):
             An IPv4 network object.
 
         Raises:
-            ValueErro: If self.prefixlen - prefixlen_diff < 0. I.e., you have a
+            ValueError: If self.prefixlen - prefixlen_diff < 0. I.e., you have a
               negative prefix length.
                 OR
             If prefixlen_diff and new_prefix are both set or new_prefix is a
