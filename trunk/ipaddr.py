@@ -642,9 +642,6 @@ class _BaseNet(_IPAddrBase):
         Raises:
             TypeError: If self and other are of difffering address
               versions.
-            RunTimeError: There was some unknown error in the address
-              exclusion process.  This likely points to a bug elsewhere
-              in this code.
             ValueError: If other is not completely contained by self.
 
         """
@@ -671,18 +668,18 @@ class _BaseNet(_IPAddrBase):
                 s1, s2 = s2.subnet()
             else:
                 # If we got here, there's a bug somewhere.
-                raise RunTimeError('Error performing exclusion: '
-                                   's1: %s s2: %s other: %s' %
-                                   (str(s1), str(s2), str(other)))
+                assert True == False, ('Error performing exclusion: '
+                                       's1: %s s2: %s other: %s' %
+                                       (str(s1), str(s2), str(other)))
         if s1 == other:
             ret_addrs.append(s2)
         elif s2 == other:
             ret_addrs.append(s1)
         else:
             # If we got here, there's a bug somewhere.
-            raise RunTimeError('Error performing exclusion: '
-                               's1: %s s2: %s other: %s' %
-                               (str(s1), str(s2), str(other)))
+            assert True == False, ('Error performing exclusion: '
+                                   's1: %s s2: %s other: %s' %
+                                   (str(s1), str(s2), str(other)))
 
         return sorted(ret_addrs, key=_BaseNet._get_networks_key)
 
