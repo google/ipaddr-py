@@ -1134,16 +1134,22 @@ class IPv4Network(_BaseV4, _BaseNet):
 
         Args:
             address: A string or integer representing the IP [& network].
-              '192.168.1.1/32'
-              '192.168.1.1/255.255.255.255'
+              '192.168.1.1/24'
+              '192.168.1.1/255.255.255.0'
               '192.168.1.1/0.0.0.255'
+              are all functionally the same in IPv4. Similarly,
               '192.168.1.1'
-              are all functionally the same in IPv4. That is to say,
-              failing to provide a subnetmask will create an object with
-              a mask of /32. A netmask of '255.255.255.255' is assumed
-              to be /32 and '0.0.0.0' is assumed to be /0, even though
-              other netmasks can be expressed both as host- and
-              net-masks. (255.0.0.0 == 0.255.255.255)
+              '192.168.1.1/255.255.255.255'
+              '192.168.1.1/32'
+              are also functionaly equivalent. That is to say, failing to
+              provide a subnetmask will create an object with a mask of /32.
+
+              If the mask (portion after the / in the argument) is given in
+              dotted quad form, it is treated as a netmask if it starts with a
+              non-zero field (e.g. /255.0.0.0 == /8) and as a hostmask if it
+              starts with a zero field (e.g. 0.255.255.255 == /8), with the
+              single exception of an all-zero mask which is treated as a
+              netmask == /0. If no mask is given, a default of /32 is used.
 
               Additionally, an integer can be passed, so
               IPv4Network('192.168.1.1') == IPv4Network(3232235777).
