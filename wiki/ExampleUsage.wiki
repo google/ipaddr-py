@@ -1,4 +1,5 @@
-Examples of the functionality of the ipaddr library.
+
+Examples of the functionality of the 1.x version of the ipaddr library. Documentation for the current version (2.x) will be coming shortly.
 
 A lot of the functionality of the IPv4 class is derived from the BaseIP class. The same is true for the IPv6 class. that means that all of the functionality you see here is exactly the same when dealing with IPv6 addresses.
 
