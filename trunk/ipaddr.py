@@ -936,7 +936,7 @@ class _BaseV4(object):
             The IP ip_str as an integer.
 
         Raises:
-            IPv4IpValidationError: if the string isn't a valid IP string.
+            AddressValueError: if the string isn't a valid IP string.
 
         """
         packed_ip = 0
