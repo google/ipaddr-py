@@ -1046,7 +1046,7 @@ class _BaseV4(object):
 
     @property
     def is_loopback(self):
-        """Test if the address is a loopback adddress.
+        """Test if the address is a loopback address.
 
         Returns:
             A boolean, True if the address is a loopback per RFC 3330.
@@ -1586,7 +1586,7 @@ class _BaseV6(object):
 
     @property
     def is_loopback(self):
-        """Test if the address is a loopback adddress.
+        """Test if the address is a loopback address.
 
         Returns:
             A boolean, True if the address is a loopback address as defined in
