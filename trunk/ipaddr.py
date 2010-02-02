@@ -1770,7 +1770,7 @@ class IPv6Network(_BaseV6, _BaseNet):
         addr = str(address).split('/')
 
         if len(addr) > 2:
-            raise AddressValueError(ipaddr)
+            raise AddressValueError(address)
 
         if not self._is_valid_ip(addr[0]):
             raise AddressValueError(addr[0])
