@@ -78,6 +78,8 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv6Network,
                           '1.2.3.4')
         self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv6Network,
+                          'cafe:cafe::/128/190')
+        self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv6Network,
                           '1234:axy::b')
         self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv6Address,
                           '1234:axy::b')
