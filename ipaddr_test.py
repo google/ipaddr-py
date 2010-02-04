@@ -895,6 +895,8 @@ class IpaddrUnitTest(unittest.TestCase):
     def testIsValidIp(self):
         ip = ipaddr.IPv6Address('::')
         self.assertTrue(ip._is_valid_ip('2001:658:22a:cafe:200::1'))
+        self.assertTrue(ip._is_valid_ip('::ffff:10.10.0.0'))
+        self.assertTrue(ip._is_valid_ip('::ffff:192.168.0.0'))
         self.assertFalse(ip._is_valid_ip('2001:658:22a::::1'))
         self.assertFalse(ip._is_valid_ip(':658:22a:cafe:200::1'))
         self.assertFalse(ip._is_valid_ip('2001:658:22a:cafe:200:'))

@@ -1337,7 +1337,7 @@ class _BaseV6(object):
 
         for field in fields:
             try:
-                ip_int = (ip_int << 16) + int(field, 16)
+                ip_int = (ip_int << 16) + int(field or '0', 16)
             except ValueError:
                 raise AddressValueError(ip_str)
 
