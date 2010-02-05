@@ -656,6 +656,8 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEquals(True, ipaddr.IPAddress('127.42.0.0').is_loopback)
         self.assertEquals(False, ipaddr.IPAddress('128.0.0.0').is_loopback)
 
+        self.assertEquals(True, ipaddr.IPNetwork('0.0.0.0').is_unspecified)
+
         
     def testReservedIpv6(self):
 
