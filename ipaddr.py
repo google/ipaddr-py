@@ -1045,6 +1045,17 @@ class _BaseV4(object):
         return self in IPv4Network('224.0.0.0/4')
 
     @property
+    def is_unspecified(self):
+        """Test if the address is unspecified.
+
+        Returns:
+            A boolean, True if this is the unspecified address as defined in
+            RFC 5735 3.
+
+        """
+        return self in IPv4Network('0.0.0.0')
+
+    @property
     def is_loopback(self):
         """Test if the address is a loopback address.
 
