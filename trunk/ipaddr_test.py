@@ -100,6 +100,24 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(str(self.ipv6.hostmask),
                          '::ffff:ffff:ffff:ffff')
 
+
+    def testBadVersionComparison(self):
+        # These should always raise TypeError
+        v4addr = ipaddr.IPAddress('1.1.1.1')
+        v4net = ipaddr.IPNetwork('1.1.1.1')
+        v6addr = ipaddr.IPAddress('::1')
+        v6net = ipaddr.IPAddress('::1')
+        
+        self.assertRaises(TypeError, v4addr.__lt__, v6addr)
+        self.assertRaises(TypeError, v4addr.__gt__, v6addr)
+        self.assertRaises(TypeError, v4net.__lt__, v6net)
+        self.assertRaises(TypeError, v4net.__gt__, v6net)
+
+        self.assertRaises(TypeError, v6addr.__lt__, v4addr)
+        self.assertRaises(TypeError, v6addr.__gt__, v4addr)
+        self.assertRaises(TypeError, v6net.__lt__, v4net)
+        self.assertRaises(TypeError, v6net.__gt__, v4net)
+
     def testIpFromInt(self):
         self.assertEqual(self.ipv4.ip, ipaddr.IPv4Network(16909060).ip)
         self.assertRaises(ipaddr.AddressValueError,
@@ -525,11 +543,14 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEquals(ip1.compare_networks(ip3), -1)
         self.assertTrue(ip1._get_networks_key() < ip3._get_networks_key())
 
-        # Test comparing different protocols
+        # Test comparing different protocols.
+        # Should always raise a TypeError.
         ipv6 = ipaddr.IPv6Network('::/0')
         ipv4 = ipaddr.IPv4Network('0.0.0.0/0')
-        self.assertTrue(ipv6 > ipv4)
-        self.assertTrue(ipv4 < ipv6)
+        self.assertRaises(TypeError, ipv4.__lt__, ipv6)
+        self.assertRaises(TypeError, ipv4.__gt__, ipv6)
+        self.assertRaises(TypeError, ipv6.__lt__, ipv4)
+        self.assertRaises(TypeError, ipv6.__gt__, ipv4)
 
         # Regression test for issue 19.
         ip1 = ipaddr.IPNetwork('10.1.2.128/25')
@@ -655,10 +676,8 @@ class IpaddrUnitTest(unittest.TestCase):
                           ipaddr.IPAddress('127.100.200.254').is_loopback)
         self.assertEquals(True, ipaddr.IPAddress('127.42.0.0').is_loopback)
         self.assertEquals(False, ipaddr.IPAddress('128.0.0.0').is_loopback)
-
         self.assertEquals(True, ipaddr.IPNetwork('0.0.0.0').is_unspecified)
 
-        
     def testReservedIpv6(self):
 
         self.assertEquals(True, ipaddr.IPNetwork('ffff::').is_multicast)

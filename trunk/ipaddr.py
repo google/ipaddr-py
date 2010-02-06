@@ -390,8 +390,8 @@ class _BaseIP(_IPAddrBase):
 
     def __eq__(self, other):
         try:
-            return not (self._ip != other._ip
-                        or self._version != other._version)
+            return (self._ip == other._ip
+                    and self._version == other._version)
         except AttributeError:
             return NotImplemented
 
@@ -415,14 +415,16 @@ class _BaseIP(_IPAddrBase):
 
     def __lt__(self, other):
         if self._version != other._version:
-            return self._version < other._version
+            raise TypeError("%s and %s aren't of the same version" % (
+                str(self), str(other)))        
         if self._ip != other._ip:
             return self._ip < other._ip
         return False
 
     def __gt__(self, other):
         if self._version != other._version:
-            return self._version > other._version
+            raise TypeError("%s and %s aren't of the same version" % (
+                str(self), str(other)))        
         if self._ip != other._ip:
             return self._ip > other._ip
         return False
@@ -490,28 +492,24 @@ class _BaseNet(_IPAddrBase):
             return IPAddress(broadcast + n, version=self._version)
 
     def __lt__(self, other):
-        try:
-            if self._version != other._version:
-                return self._version < other._version
-            if self.network != other.network:
-                return self.network < other.network
-            if self.netmask != other.netmask:
-                return self.netmask < other.netmask
-            return False
-        except AttributeError:
-            return NotImplemented
+        if self._version != other._version:
+            raise TypeError("%s and %s aren't of the same version" % (
+                str(self), str(other)))        
+        if self.network != other.network:
+            return self.network < other.network
+        if self.netmask != other.netmask:
+            return self.netmask < other.netmask
+        return False
 
     def __gt__(self, other):
-        try:
-            if self._version != other._version:
-                return self._version > other._version
-            if self.network != other.network:
-                return self.network > other.network
-            if self.netmask != other.netmask:
-                return self.netmask > other.netmask
-            return False
-        except AttributeError:
-            return NotImplemented
+        if self._version != other._version:
+            raise TypeError("%s and %s aren't of the same version" % (
+                str(self), str(other)))        
+        if self.network != other.network:
+            return self.network > other.network
+        if self.netmask != other.netmask:
+            return self.netmask > other.netmask
+        return False
 
     def __le__(self, other):
         gt = self.__gt__(other)
