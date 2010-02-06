@@ -197,7 +197,8 @@ def summarize_address_range(first, last):
     if not (isinstance(first, _BaseIP) and isinstance(last, _BaseIP)):
         raise TypeError('first and last must be IP addresses, not networks')
     if first.version != last.version:
-        raise TypeError('IP addresses must be same version')
+        raise TypeError("%s and %s are not of the same version" % (
+                str(self), str(other)))        
     if first > last:
         raise ValueError('last IP address must be greater than first')
 
@@ -305,24 +306,18 @@ def collapse_address_list(addresses):
     for ip in addresses:
         if isinstance(ip, _BaseIP):
             if ips and ips[-1]._version != ip._version:
-                raise TypeError('Can only collapse like-versioned objects -'
-                                ' v%d: %s, v%d %s' % (ips[-1]._version,
-                                                      str(ips[-1]),
-                                                      ip._version, str(ip)))
+                raise TypeError("%s and %s are not of the same version" % (
+                        str(ip), str(ips[-1])))
             ips.append(ip)
         elif ip._prefixlen == ip._max_prefixlen:
             if ips and ips[-1]._version != ip._version:
-                raise TypeError('Can only collapse like-versioned objects -'
-                                ' v%d: %s, v%d %s' % (ips[-1]._version,
-                                                      str(ips[-1]),
-                                                      ip._version, str(ip)))
+                raise TypeError("%s and %s are not of the same version" % (
+                        str(ip), str(ips[-1])))
             ips.append(ip.ip)
         else:
             if nets and nets[-1]._version != ip._version:
-                raise TypeError('Can only collapse like-versioned objects -'
-                                ' v%d: %s, v%d %s' % (ips[-1]._version,
-                                                      str(ips[-1]),
-                                                      ip._version, str(ip)))
+                raise TypeError("%s and %s are not of the same version" % (
+                        str(ip), str(ips[-1])))
             nets.append(ip)
 
     # sort and dedup
@@ -415,7 +410,7 @@ class _BaseIP(_IPAddrBase):
 
     def __lt__(self, other):
         if self._version != other._version:
-            raise TypeError("%s and %s aren't of the same version" % (
+            raise TypeError("%s and %s are not of the same version" % (
                 str(self), str(other)))        
         if self._ip != other._ip:
             return self._ip < other._ip
@@ -423,7 +418,7 @@ class _BaseIP(_IPAddrBase):
 
     def __gt__(self, other):
         if self._version != other._version:
-            raise TypeError("%s and %s aren't of the same version" % (
+            raise TypeError("%s and %s are not of the same version" % (
                 str(self), str(other)))        
         if self._ip != other._ip:
             return self._ip > other._ip
@@ -493,7 +488,7 @@ class _BaseNet(_IPAddrBase):
 
     def __lt__(self, other):
         if self._version != other._version:
-            raise TypeError("%s and %s aren't of the same version" % (
+            raise TypeError("%s and %s are not of the same version" % (
                 str(self), str(other)))        
         if self.network != other.network:
             return self.network < other.network
@@ -503,7 +498,7 @@ class _BaseNet(_IPAddrBase):
 
     def __gt__(self, other):
         if self._version != other._version:
-            raise TypeError("%s and %s aren't of the same version" % (
+            raise TypeError("%s and %s are not of the same version" % (
                 str(self), str(other)))        
         if self.network != other.network:
             return self.network > other.network
@@ -644,7 +639,7 @@ class _BaseNet(_IPAddrBase):
 
         """
         if not self._version == other._version:
-            raise TypeError("%s and %s aren't of the same version" % (
+            raise TypeError("%s and %s are not of the same version" % (
                 str(self), str(other)))
 
         if other not in self:
