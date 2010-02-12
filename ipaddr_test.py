@@ -100,7 +100,6 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(str(self.ipv6.hostmask),
                          '::ffff:ffff:ffff:ffff')
 
-
     def testBadVersionComparison(self):
         # These should always raise TypeError
         v4addr = ipaddr.IPAddress('1.1.1.1')
@@ -118,6 +117,28 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(TypeError, v6net.__lt__, v4net)
         self.assertRaises(TypeError, v6net.__gt__, v4net)
 
+    def testMixedTypeComparison(self):
+        v4addr = ipaddr.IPAddress('1.1.1.1')
+        v4net = ipaddr.IPNetwork('1.1.1.1/32')
+        v6addr = ipaddr.IPAddress('::1')
+        v6net = ipaddr.IPNetwork('::1/128')
+        
+        self.assertRaises(TypeError, v4addr.__lt__, v4net)
+        self.assertRaises(TypeError, v4addr.__gt__, v4net)
+        self.assertRaises(TypeError, v4net.__lt__, v4addr)
+        self.assertRaises(TypeError, v4net.__gt__, v4addr)
+
+        self.assertRaises(TypeError, v6addr.__lt__, v6net)
+        self.assertRaises(TypeError, v6addr.__gt__, v6net)
+        self.assertRaises(TypeError, v6net.__lt__, v6addr)
+        self.assertRaises(TypeError, v6net.__gt__, v6addr)
+
+        # with get_mixed_type_key, you can sort addresses and network.
+        self.assertEqual([v4addr, v4net], sorted([v4net, v4addr],
+                                                 key=ipaddr.get_mixed_type_key))
+        self.assertEqual([v6addr, v6net], sorted([v6net, v6addr],
+                                                 key=ipaddr.get_mixed_type_key))
+        
     def testIpFromInt(self):
         self.assertEqual(self.ipv4.ip, ipaddr.IPv4Network(16909060).ip)
         self.assertRaises(ipaddr.AddressValueError,

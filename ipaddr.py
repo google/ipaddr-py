@@ -345,6 +345,29 @@ try:
 except NameError: # <Python2.6
     _compat_has_real_bytes = False
 
+def get_mixed_type_key(obj):
+    """Return a key suitable for sorting between networks and addresses.
+
+    Address and Network objects are not sortable by default; they're
+    fundamentally different so the expression
+
+        IPv4Address('1.1.1.1') <= IPv4Network('1.1.1.1/24')
+
+    doesn't make any sense.  There are some times however, where you may wish
+    to have ipaddr sort these for you anyway. If you need to do this, you
+    can use this function as the key= argument to sorted().
+    
+    Args:
+      obj: either a Network or Address object.
+    Returns:
+      appropriate key.
+
+    """
+    if isinstance(obj, _BaseNet):
+        return obj._get_networks_key()
+    elif isinstance(obj, _BaseIP):
+        return obj._get_address_key()
+    return NotImplemented
 
 class _IPAddrBase(object):
 
@@ -410,16 +433,22 @@ class _BaseIP(_IPAddrBase):
 
     def __lt__(self, other):
         if self._version != other._version:
-            raise TypeError("%s and %s are not of the same version" % (
-                str(self), str(other)))        
+            raise TypeError('%s and %s are not of the same version' % (
+                    str(self), str(other)))
+        if not isinstance(other, _BaseIP):
+            raise TypeError('%s and %s are not of the same type' % (
+                    str(self), str(other)))
         if self._ip != other._ip:
             return self._ip < other._ip
         return False
 
     def __gt__(self, other):
         if self._version != other._version:
-            raise TypeError("%s and %s are not of the same version" % (
-                str(self), str(other)))        
+            raise TypeError('%s and %s are not of the same version' % (
+                    str(self), str(other)))
+        if not isinstance(other, _BaseIP):
+            raise TypeError('%s and %s are not of the same type' % (
+                    str(self), str(other)))
         if self._ip != other._ip:
             return self._ip > other._ip
         return False
@@ -432,6 +461,9 @@ class _BaseIP(_IPAddrBase):
 
     def __hash__(self):
         return hash(hex(self._ip))
+
+    def _get_address_key(self):
+        return (self._version, self)
 
     @property
     def version(self):
@@ -488,8 +520,11 @@ class _BaseNet(_IPAddrBase):
 
     def __lt__(self, other):
         if self._version != other._version:
-            raise TypeError("%s and %s are not of the same version" % (
-                str(self), str(other)))        
+            raise TypeError('%s and %s are not of the same version' % (
+                    str(self), str(other)))
+        if not isinstance(other, _BaseNet):
+            raise TypeError('%s and %s are not of the same type' % (
+                    str(self), str(other)))
         if self.network != other.network:
             return self.network < other.network
         if self.netmask != other.netmask:
@@ -498,8 +533,11 @@ class _BaseNet(_IPAddrBase):
 
     def __gt__(self, other):
         if self._version != other._version:
-            raise TypeError("%s and %s are not of the same version" % (
-                str(self), str(other)))        
+            raise TypeError('%s and %s are not of the same version' % (
+                    str(self), str(other)))
+        if not isinstance(other, _BaseNet):
+            raise TypeError('%s and %s are not of the same type' % (
+                    str(self), str(other)))
         if self.network != other.network:
             return self.network > other.network
         if self.netmask != other.netmask:
