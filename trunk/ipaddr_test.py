@@ -123,15 +123,15 @@ class IpaddrUnitTest(unittest.TestCase):
         v6addr = ipaddr.IPAddress('::1')
         v6net = ipaddr.IPNetwork('::1/128')
         
-        self.assertRaises(TypeError, v4addr.__lt__, v4net)
-        self.assertRaises(TypeError, v4addr.__gt__, v4net)
-        self.assertRaises(TypeError, v4net.__lt__, v4addr)
-        self.assertRaises(TypeError, v4net.__gt__, v4addr)
+        self.assertRaises(TypeError, lambda: v4addr < v4net)
+        self.assertRaises(TypeError, lambda: v4addr > v4net)
+        self.assertRaises(TypeError, lambda: v4net < v4addr)
+        self.assertRaises(TypeError, lambda: v4net > v4addr)
 
-        self.assertRaises(TypeError, v6addr.__lt__, v6net)
-        self.assertRaises(TypeError, v6addr.__gt__, v6net)
-        self.assertRaises(TypeError, v6net.__lt__, v6addr)
-        self.assertRaises(TypeError, v6net.__gt__, v6addr)
+        self.assertRaises(TypeError, lambda: v6addr < v6net)
+        self.assertRaises(TypeError, lambda: v6addr > v6net)
+        self.assertRaises(TypeError, lambda: v6net < v6addr)
+        self.assertRaises(TypeError, lambda: v6net > v6addr)
 
         # with get_mixed_type_key, you can sort addresses and network.
         self.assertEqual([v4addr, v4net], sorted([v4net, v4addr],
