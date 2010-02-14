@@ -4,6 +4,26 @@
 
 Here are the visible changes for each release.
 
+== 2.1.0 ==
+
+(2/13/2010)
+
+ipaddr-2.1.0 release notes.
+
+Easier change this time :)
+
+  * networks and addresses are unsortable by default (see https://groups.google.com/group/ipaddr-py-dev/browse_thread/thread/8fbc5166be71adbc for discussion).
+  * exception text cleanup.
+  * fixing inconsistent behavior of v4/v6 address/network comparisons.
+  * add IPv4Network().is_unspecified (thanks rep.dot.net)
+  * fix for decoding mapped addresses (thanks rlaager)
+  * docstring updates (thanks Scott Kitterman)
+  * fix errant ref to non-existent variable(s) (thanks Harry Bock)
+  * fix exceptions  (most exceptions are subclassed from ValueError now, so this can easily be caught)
+  * iterator for looping through subnets (thanks Marco Giutsi)
+
+That's mostly it. there were quite a few other minor changes, but this should cover the major bits. Usage.wiki will be updated in the coming days.
+
 == 2.0.0 ==
 
 ipaddr-2.0 release notes.
