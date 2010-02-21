@@ -1314,7 +1314,7 @@ class IPv4Network(_BaseV4, _BaseNet):
         if len(mask) == 4:
             if [x for x in mask if int(x) not in self._valid_mask_octets]:
                 return False
-            if [x for idx, y in enumerate(mask) if idx > 0 and
+            if [y for idx, y in enumerate(mask) if idx > 0 and
                 y > mask[idx - 1]]:
                 return False
             return True
