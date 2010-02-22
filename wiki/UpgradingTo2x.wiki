@@ -58,14 +58,12 @@ The network and address methods between the various IP versions are identical, s
 
 ipaddr 1.x relied mostly on the monolithic IP(string) constructor. This would return either a IPv4 or IPv6 object.  There are now two main constructors, {{{ IPAddress(address_string) }}} and {{{ IPNetwork(address_string) }}}. These constructors try to determine the type, either v4 or v6, of string or int and then return an appropriately-typed object.
 
-
+*more to come*
 
 === Accessors ===
 
+*more to come*
+
 === Exceptions ===
 
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+*more to come*
