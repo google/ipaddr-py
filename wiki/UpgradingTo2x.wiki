@@ -1,0 +1,63 @@
+This page describes the major differences between the 1.x and 2.x branches of ipaddr and what changes you need to make to your code to begin using the new versions.
+
+= Introduction =
+
+foobar
+
+
+= Details =
+
+=== Design Changes ===
+
+First and foremost, the overall design of ipaddr changed. In the 1.x branch, there was no concept of the Address, as strict 32 bit (IPv4) or 128 bit (IPv6) addresses.  This lead to confusion when the broadcast attribute of IPv4('1.1.1.0/24') was returned as 1.1.1.255/32.  The /32 implied that this was a network object being returned, albeit a network with only one host, when in fact it's not a network at all.
+
+So, in 2.x the concept of an address was introduced.  These are individual 32 bit (IPv4) or 128 bit (IPv6) IPs.  Networks can contain them, eg 
+
+{{{
+>>> ipaddr.IPv4Address('1.1.1.1') in ipaddr.IPv4Network('1.1.1.0/24')
+True
+}}}
+
+Since Addresses and Networks are fundamentally different object types now, they're no longer comparable by default.
+
+{{{
+>>> address = ipaddr.IPv4Address('1.1.1.0')
+>>> network = ipaddr.IPv4Network('1.1.1.0/24')
+>>> sorted([address, network])
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/pmoody/src/ipaddr-py/trunk/ipaddr.py", line 440, in __lt__
+    str(self), str(other)))
+TypeError: 1.1.1.1 and 1.1.1.0/24 are not of the same type
+
+}}}
+
+However they can be sorted by using {{{ ipaddr.get_mixed_type_key() }}} key indexing function to sorted()
+
+{{{
+>>> sorted([address, network], key=ipaddr.get_mixed_type_key)
+[IPv4Address('1.1.1.0'), IPv4Network('1.1.1.0/24')]
+}}}
+
+=== Classes ===
+
+With IPv4 and IPv6, the addition of the concept of the Address give ipaddr 4 public classes.
+
+{{{
+IPv4Address
+IPv4Network
+IPv6Address
+IPv6Network
+}}}
+
+=== Generators ===
+
+=== Accessors ===
+
+=== Exceptions ===
+
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
