@@ -1,5 +1,7 @@
 This page describes the major differences between the 1.x and 2.x branches of ipaddr and what changes you need to make to your code to begin using the new versions.
 
+(still a work in progress)
+
 = Introduction =
 
 foobar
@@ -50,7 +52,13 @@ IPv6Address
 IPv6Network
 }}}
 
-=== Generators ===
+The network and address methods between the various IP versions are identical, so from the standpoint of the developer, they're mostly interchangeable.
+
+=== Constructors ===
+
+ipaddr 1.x relied mostly on the monolithic IP(string) constructor. This would return either a IPv4 or IPv6 object.  There are now two main constructors, {{{ IPAddress(address_string) }}} and {{{ IPNetwork(address_string) }}}. These constructors try to determine the type, either v4 or v6, of string or int and then return an appropriately-typed object.
+
+
 
 === Accessors ===
 
