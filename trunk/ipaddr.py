@@ -1685,7 +1685,7 @@ class _BaseV6(object):
             return None
         try:
             return IPv4Address(int('%s%s' % (hextets[-2], hextets[-1]), 16))
-        except IPv4IpvalidationError:
+        except AddressValueError:
             return None
 
 
@@ -1708,7 +1708,7 @@ class IPv6Address(_BaseV6, _BaseIP):
                 IPv6Address('2001:4860::')
 
         Raises:
-            IPv6IpValidationError: If address isn't a valid IPv6 address.
+            AddressValueError: If address isn't a valid IPv6 address.
 
         """
         _BaseIP.__init__(self, address)
