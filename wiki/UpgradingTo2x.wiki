@@ -4,8 +4,7 @@ This page describes the major differences between the 1.x and 2.x branches of ip
 
 = Introduction =
 
-foobar
-
+Lots of work has gone into making the 2.x branch of ipaddr easier to use and better overall. Since we'd like as many people as possible to use to new version, here's a short summary of the major changes and what you'll have to do to your code to make it work with the new version.
 
 = Details =
 
@@ -66,4 +65,14 @@ ipaddr 1.x relied mostly on the monolithic IP(string) constructor. This would re
 
 === Exceptions ===
 
-*more to come*
+In general, the exceptions are much more "pythonic".   No more inventing exceptions for every corner case since python politely furnishes us with almost every exception type we already need. In the couple of cases where it does actually make sense for us to have our own exceptions, they're now subclassed from ValueError so you can shortcut the exception catching if you'd like and just catch ValueError.
+
+
+|| 1.x || 2.x ||
+|| ipaddr.IPv4IpValidationError || ipaddr.AddressValueError ||
+|| ipaddr.IPv6IpValidationError || ipaddr.AddressValueError ||
+|| ipaddr.IPv4NetmaskValidationError || ipaddr.NetmaskValueError ||
+|| ipaddr.IPv6NetmaskValidationError || ipaddr.NetmaskValueError ||
+|| ipaddr.IPTypeError || TypeError ||
+|| ipaddr.IPAddressExclussionError || ValueError ||
+|| ipaddr.PrefixLenDiffInvalidError || ValueError ||
