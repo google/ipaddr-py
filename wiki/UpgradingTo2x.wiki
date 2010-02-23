@@ -57,11 +57,23 @@ The network and address methods between the various IP versions are identical, s
 
 ipaddr 1.x relied mostly on the monolithic IP(string) constructor. This would return either a IPv4 or IPv6 object.  There are now two main constructors, {{{ IPAddress(address_string) }}} and {{{ IPNetwork(address_string) }}}. These constructors try to determine the type, either v4 or v6, of string or int and then return an appropriately-typed object.
 
+
 *more to come*
 
 === Accessors ===
 
-*more to come*
+2.x makes much greater use of pythons special methods for returning the integer or string representations of an object.
+
+|| 1.x || 2.x ||
+|| network.ip_ext || str(network) ||
+|| network.ip || int(network) ||
+|| network.netmask_ext || str(network.netmask) ||
+|| network.netmask || int(network.netmask) ||
+|| network.broadcast_ext || str(network.broadcast) ||
+|| network.broadcast || int(network.broadcast) ||
+
+Additionally, the various network attributes ({{{ .ip, .ip_ext, .network, .network_ext, .broadcast, .broadcast_ext }}}) used to return either strings or ints. As mentioned before, they return ipaddr address objects, either of type {{{IPv4Address}}} or {{{IPv6Address}}}.
+
 
 === Exceptions ===
 
