@@ -10,8 +10,8 @@ Here are the visible changes for each release.
 
 ipaddr-2.1.1 release notes.
 
- * bug with list comprehension in IPv4Network._is_valid_netmask()
- * kill the last remaining instances of the old exceptions in the docstrings(bugs reported by Scott Kitterman)
+ * bug with list comprehension in {{{ IPv4Network._is_valid_netmask() }}}
+ * kill the last remaining instances of the old exceptions in the docstrings(thanks Scott Kitterman)
 
 == 2.1.0 ==
 
