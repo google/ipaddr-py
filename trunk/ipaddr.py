@@ -453,6 +453,18 @@ class _BaseIP(_IPAddrBase):
             return self._ip > other._ip
         return False
 
+    # Shorthand for Integer addition and subtraction. This is not
+    # meant to ever support addition/subtraction of addresses.
+    def __add__(self, other):
+        if not isinstance(other, int):
+            return NotImplemented
+        return IPAddress(int(self) + other, version=self._version)
+
+    def __sub__(self, other):
+        if not isinstance(other, int):
+            return NotImplemented
+        return IPAddress(int(self) - other, version=self._version)
+    
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, str(self))
 
