@@ -47,6 +47,17 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual("IPv6Network('::1/128')",
                          repr(ipaddr.IPv6Network('::1')))
 
+    # issue57
+    def testAddressIntMath(self):
+        self.assertEqual(ipaddr.IPv4Address('1.1.1.1') + 255,
+                         ipaddr.IPv4Address('1.1.2.0'))
+        self.assertEqual(ipaddr.IPv4Address('1.1.1.1') - 256,
+                         ipaddr.IPv4Address('1.1.0.1'))
+        self.assertEqual(ipaddr.IPv6Address('::1') + (2**16 - 2),
+                         ipaddr.IPv6Address('::ffff'))
+        self.assertEqual(ipaddr.IPv6Address('::ffff') - (2**16 - 2),
+                         ipaddr.IPv6Address('::1'))
+
     def testInvalidStrings(self):
         self.assertRaises(ValueError, ipaddr.IPNetwork, '')
         self.assertRaises(ValueError, ipaddr.IPNetwork, 'www.google.com')
