@@ -20,22 +20,38 @@ True
 Since Addresses and Networks are fundamentally different object types now, they're no longer comparable by default.
 
 {{{
->>> address = ipaddr.IPv4Address('1.1.1.0')
->>> network = ipaddr.IPv4Network('1.1.1.0/24')
+>>> address = ipaddr.IPv4Address('192.0.2.1')
+>>> network = ipaddr.IPv4Network('192.0.2.0/24')
 >>> sorted([address, network])
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
-  File "/home/pmoody/src/ipaddr-py/trunk/ipaddr.py", line 440, in __lt__
+  File "ipaddr.py", line 539, in __lt__
     str(self), str(other)))
-TypeError: 1.1.1.1 and 1.1.1.0/24 are not of the same type
+TypeError: 192.0.2.0/24 and 192.0.2.1 are not of the same type
 
 }}}
 
-However they can be sorted by using {{{ ipaddr.get_mixed_type_key() }}} key indexing function to sorted()
+IPv4 and IPv6 objects are also no longer comparable by default:
+
+{{{
+>>> four = ipaddr.IPNetwork('192.0.2.0/24')
+>>> six = ipaddr.IPNetwork('2001:db8::/32')
+>>> sorted([four, six])
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "ipaddr.py", line 536, in __lt__
+    str(self), str(other)))
+TypeError: 2001:db8::/32 and 192.0.2.0/24 are not of the same version
+
+}}}
+
+However they can be sorted by using {{{ ipaddr.get_mixed_type_key() }}} key indexing function to sorted().  E.g.,
 
 {{{
 >>> sorted([address, network], key=ipaddr.get_mixed_type_key)
-[IPv4Address('1.1.1.0'), IPv4Network('1.1.1.0/24')]
+[IPv4Network('192.0.2.0/24'), IPv4Address('192.0.2.1')]
+>>> sorted([four, six], key=ipaddr.get_mixed_type_key)
+[IPv4Network('192.0.2.0/24'), IPv6Network('2001:db8::/32')]
 }}}
 
 === Classes ===
