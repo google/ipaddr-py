@@ -79,13 +79,14 @@ ipaddr 1.x relied mostly on the monolithic IP(string) constructor. This would re
 2.x makes much greater use of Python's special methods for returning the integer or string representations of an object.
 
 || 1.x || 2.x ||
-|| network.ip_ext || str(network) or network.compressed ||
-|| network.ip_ext_full || network.exploded ||
-|| network.ip || int(network) ||
-|| network.netmask_ext || str(network.netmask) ||
+|| str(network) || str(network) ||
+|| network.ip || int(network.ip) or int(network) ||
+|| network.ip_ext || str(network.ip) ||
+|| network.ip_ext_full || network.exploded (for IPv6 only) ||
 || network.netmask || int(network.netmask) ||
-|| network.broadcast_ext || str(network.broadcast) ||
+|| network.netmask_ext || str(network.netmask) ||
 || network.broadcast || int(network.broadcast) ||
+|| network.broadcast_ext || str(network.broadcast) ||
 
 Additionally, the various network attributes ({{{ .ip, .ip_ext, .network, .network_ext, .broadcast, .broadcast_ext }}}) used to return either strings or ints. As mentioned before, they return ipaddr address objects, either of type {{{IPv4Address}}} or {{{IPv6Address}}}.
 
