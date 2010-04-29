@@ -198,7 +198,7 @@ def summarize_address_range(first, last):
         raise TypeError('first and last must be IP addresses, not networks')
     if first.version != last.version:
         raise TypeError("%s and %s are not of the same version" % (
-                str(self), str(other)))        
+                str(self), str(other)))
     if first > last:
         raise ValueError('last IP address must be greater than first')
 
@@ -356,7 +356,7 @@ def get_mixed_type_key(obj):
     doesn't make any sense.  There are some times however, where you may wish
     to have ipaddr sort these for you anyway. If you need to do this, you
     can use this function as the key= argument to sorted().
-    
+
     Args:
       obj: either a Network or Address object.
     Returns:
@@ -684,13 +684,16 @@ class _BaseNet(_IPAddrBase):
 
         Raises:
             TypeError: If self and other are of difffering address
-              versions.
+              versions, or if other is not a network object.
             ValueError: If other is not completely contained by self.
 
         """
         if not self._version == other._version:
             raise TypeError("%s and %s are not of the same version" % (
                 str(self), str(other)))
+
+        if not isinstance(other, _BaseNet):
+            raise TypeError("%s is not a network object" % str(other))
 
         if other not in self:
             raise ValueError('%s not contained in %s' % (str(other),

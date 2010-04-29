@@ -788,10 +788,12 @@ class IpaddrUnitTest(unittest.TestCase):
         addr1 = ipaddr.IPNetwork('10.1.1.0/24')
         addr2 = ipaddr.IPNetwork('10.1.1.0/26')
         addr3 = ipaddr.IPNetwork('10.2.1.0/24')
+        addr4 = ipaddr.IPAddress('10.1.1.0')
         self.assertEqual(addr1.address_exclude(addr2),
                          [ipaddr.IPNetwork('10.1.1.64/26'),
                           ipaddr.IPNetwork('10.1.1.128/25')])
         self.assertRaises(ValueError, addr1.address_exclude, addr3)
+        self.assertRaises(TypeError, addr1.address_exclude, addr4)
         self.assertEqual(addr1.address_exclude(addr1), [])
 
     def testHash(self):
