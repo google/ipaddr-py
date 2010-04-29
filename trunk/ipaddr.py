@@ -409,7 +409,8 @@ class _BaseIP(_IPAddrBase):
     def __eq__(self, other):
         try:
             return (self._ip == other._ip
-                    and self._version == other._version)
+                    and self._version == other._version
+                    and isinstance(other, _BaseIP))
         except AttributeError:
             return NotImplemented
 
@@ -464,7 +465,7 @@ class _BaseIP(_IPAddrBase):
         if not isinstance(other, int):
             return NotImplemented
         return IPAddress(int(self) - other, version=self._version)
-    
+
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, str(self))
 
@@ -1642,7 +1643,7 @@ class _BaseV6(object):
             RFC 2373 2.5.2.
 
         """
-        return self == IPv6Network('::')
+        return (self == IPv6Network('::') or self == IPv6Address('::'))
 
     @property
     def is_loopback(self):
@@ -1653,7 +1654,7 @@ class _BaseV6(object):
             RFC 2373 2.5.3.
 
         """
-        return self == IPv6Network('::1')
+        return (self == IPv6Network('::1') or self == IPv6Address('::1'))
 
     @property
     def is_link_local(self):
