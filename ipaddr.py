@@ -695,6 +695,9 @@ class _BaseNet(_IPAddrBase):
         if other not in self:
             raise ValueError('%s not contained in %s' % (str(other),
                                                          str(self)))
+        if other == self:
+            return []
+
         ret_addrs = []
 
         # Make sure we're comparing the network of other.

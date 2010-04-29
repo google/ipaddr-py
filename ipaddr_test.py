@@ -792,6 +792,7 @@ class IpaddrUnitTest(unittest.TestCase):
                          [ipaddr.IPNetwork('10.1.1.64/26'),
                           ipaddr.IPNetwork('10.1.1.128/25')])
         self.assertRaises(ValueError, addr1.address_exclude, addr3)
+        self.assertEqual(addr1.address_exclude(addr1), [])
 
     def testHash(self):
         self.assertEquals(hash(ipaddr.IPNetwork('10.1.1.0/24')),
