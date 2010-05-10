@@ -44,7 +44,7 @@ def IPAddress(address, version=None):
           be considered to be IPv4 by default.
         version: An Integer, 4 or 6. If set, don't try to automatically
           determine what the IP address type is. important for things
-          like IPAddress(1), which could be IPv4, '0.0.0.0.1',  or IPv6,
+          like IPAddress(1), which could be IPv4, '0.0.0.1',  or IPv6,
           '::1'.
 
     Returns:
