@@ -47,6 +47,15 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual("IPv6Network('::1/128')",
                          repr(ipaddr.IPv6Network('::1')))
 
+    def testAutoMasking(self):
+        addr1 = ipaddr.IPv4Network('1.1.1.255/24')
+        addr1_masked = ipaddr.IPv4Network('1.1.1.0/24')
+        self.assertEqual(addr1_masked, addr1.masked())
+
+        addr2 = ipaddr.IPv6Network('2000:cafe::efac:100/96')
+        addr2_masked = ipaddr.IPv6Network('2000:cafe::/96')
+        self.assertEqual(addr2_masked, addr2.masked())
+
     # issue57
     def testAddressIntMath(self):
         self.assertEqual(ipaddr.IPv4Address('1.1.1.1') + 255,
