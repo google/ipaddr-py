@@ -1876,3 +1876,7 @@ class IPv6Network(_BaseV6, _BaseNet):
         except ValueError:
             return False
         return 0 <= prefixlen <= 128
+
+    @property
+    def with_netmask(self):
+        return self.with_prefixlen
