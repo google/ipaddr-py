@@ -593,8 +593,8 @@ class _BaseNet(_IPAddrBase):
     def __contains__(self, other):
         # dealing with another network.
         if isinstance(other, _BaseNet):
-            return (int(self.network) <= int(other._ip) and
-                    int(self.broadcast) >= int(other.broadcast))
+            return (self.network <= other.network and
+                    self.broadcast >= other.broadcast)
         # dealing with another address
         else:
             return (int(self.network) <= int(other._ip) <=
