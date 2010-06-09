@@ -351,13 +351,15 @@ class IpaddrUnitTest(unittest.TestCase):
     def testContains(self):
         self.assertTrue(ipaddr.IPv4Network('1.2.3.128/25') in self.ipv4)
         self.assertFalse(ipaddr.IPv4Network('1.2.4.1/24') in self.ipv4)
-        self.assertFalse(self.ipv4 in self.ipv6)
-        self.assertFalse(self.ipv6 in self.ipv4)
         self.assertTrue(self.ipv4 in self.ipv4)
         self.assertTrue(self.ipv6 in self.ipv6)
         # We can test addresses and string as well.
         addr1 = ipaddr.IPv4Address('1.2.3.37')
         self.assertTrue(addr1 in self.ipv4)
+        # issue 61, bad network comparison on like-ip'd network objects
+        # with identical broadcast addresses.
+        self.assertFalse(ipaddr.IPv4Network('1.1.0.0/16').__contains__(
+                ipaddr.IPv4Network('1.0.0.0/15')))
 
     def testBadAddress(self):
         self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv4Network,
