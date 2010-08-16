@@ -162,7 +162,7 @@ class IpaddrUnitTest(unittest.TestCase):
                                                  key=ipaddr.get_mixed_type_key))
         self.assertEqual([v6addr, v6net], sorted([v6net, v6addr],
                                                  key=ipaddr.get_mixed_type_key))
-        
+
     def testIpFromInt(self):
         self.assertEqual(self.ipv4.ip, ipaddr.IPv4Network(16909060).ip)
         self.assertRaises(ipaddr.AddressValueError,

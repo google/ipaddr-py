@@ -910,7 +910,7 @@ class _BaseNet(_IPAddrBase):
         """Return the network object with the host bits masked out."""
         return IPNetwork('%s/%d' % (self.network, self._prefixlen),
                          version=self._version)
-            
+
     def subnet(self, prefixlen_diff=1, new_prefix=None):
         """Return a list of subnets, rather than an interator."""
         return list(self.iter_subnets(prefixlen_diff, new_prefix))
@@ -1324,7 +1324,7 @@ class IPv4Network(_BaseV4, _BaseNet):
         if parts[0] < parts[-1]:
             return True
         return False
-    
+
     def _is_valid_netmask(self, netmask):
         """Verify that the netmask is valid.
 
