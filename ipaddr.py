@@ -1761,6 +1761,9 @@ class IPv6Address(_BaseV6, _BaseIP):
         if not addr_str:
             raise AddressValueError('')
 
+        if not self._is_valid_ip(addr_str):
+            raise AddressValueError(addr_str)
+
         self._ip = self._ip_int_from_string(addr_str)
 
 

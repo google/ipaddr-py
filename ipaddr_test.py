@@ -103,6 +103,10 @@ class IpaddrUnitTest(unittest.TestCase):
                           '1234:axy::b')
         self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv6Address,
                           '1234:axy::b')
+        self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv6Address,
+                          '2001:db8:::1')
+        self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv6Address,
+                          '2001:888888::1')
         self.assertRaises(ipaddr.AddressValueError,
                           ipaddr.IPv4Address(1)._ip_int_from_string,
                           '1.a.2.3')
