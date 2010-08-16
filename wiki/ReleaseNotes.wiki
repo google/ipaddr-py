@@ -8,15 +8,11 @@ Here are the visible changes for each release.
 
 (2010-06-12)
 
-ipaddr-2.1.3 release notes.
-
   * fix for issue61, incorrect network containment (thanks bw.default)
   
 == 2.1.2 ==
 
 (2010-05-31)
-
-ipaddr-2.1.2 release notes.
 
   * Happy Memorial day.
   * arithmetic for v4 and v6 address objects and ints (issue 57).
@@ -40,8 +36,6 @@ ipaddr-2.1.1 release notes.
 
 (2010-02-13)
 
-ipaddr-2.1.0 release notes.
-
 Easier change this time :)
 
   * networks and addresses are unsortable by default (see https://groups.google.com/group/ipaddr-py-dev/browse_thread/thread/8fbc5166be71adbc for discussion).
@@ -57,8 +51,6 @@ Easier change this time :)
 That's mostly it. there were quite a few other minor changes, but this should cover the major bits. Usage.wiki will be updated in the coming days.
 
 == 2.0.0 ==
-
-ipaddr-2.0 release notes.
 
 First and foremost, this is a backwards incompatible change.  Code written for ipaddr-1.x will likely not work stock with ipaddr-2.0. For users of the 1.x branch, I'll continue to provide support, but new-feature development has ceased. But it's not so bad, take a look.All in all, I think this new version of ipaddr is much more intuitive and easy to use. 
 
