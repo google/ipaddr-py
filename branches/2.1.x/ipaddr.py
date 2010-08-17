@@ -26,6 +26,9 @@ __version__ = '2.1.3'
 
 import struct
 
+IPV4LENGTH = 32
+IPV6LENGTH = 128
+
 
 class AddressValueError(ValueError):
     """A Value Error related to the address."""
@@ -907,7 +910,7 @@ class _BaseNet(_IPAddrBase):
         """Return the network object with the host bits masked out."""
         return IPNetwork('%s/%d' % (self.network, self._prefixlen),
                          version=self._version)
-            
+
     def subnet(self, prefixlen_diff=1, new_prefix=None):
         """Return a list of subnets, rather than an interator."""
         return list(self.iter_subnets(prefixlen_diff, new_prefix))
@@ -970,11 +973,11 @@ class _BaseV4(object):
     """
 
     # Equivalent to 255.255.255.255 or 32 bits of 1's.
-    _ALL_ONES = (2**32) - 1
+    _ALL_ONES = (2**IPV4LENGTH) - 1
 
     def __init__(self, address):
         self._version = 4
-        self._max_prefixlen = 32
+        self._max_prefixlen = IPV4LENGTH
 
     def _explode_shorthand_ip_string(self, ip_str=None):
         if not ip_str:
@@ -1242,7 +1245,7 @@ class IPv4Network(_BaseV4, _BaseNet):
         if isinstance(address, (int, long)):
             self._ip = address
             self.ip = IPv4Address(self._ip)
-            self._prefixlen = 32
+            self._prefixlen = self._max_prefixlen
             self.netmask = IPv4Address(self._ALL_ONES)
             if address < 0 or address > self._ALL_ONES:
                 raise AddressValueError(address)
@@ -1253,7 +1256,7 @@ class IPv4Network(_BaseV4, _BaseNet):
             if isinstance(address, bytes) and len(address) == 4:
                 self._ip = struct.unpack('!I', address)[0]
                 self.ip = IPv4Address(self._ip)
-                self._prefixlen = 32
+                self._prefixlen = self._max_prefixlen
                 self.netmask = IPv4Address(self._ALL_ONES)
                 return
 
@@ -1293,7 +1296,7 @@ class IPv4Network(_BaseV4, _BaseNet):
                 self.netmask = IPv4Address(self._ip_int_from_prefix(
                     self._prefixlen))
         else:
-            self._prefixlen = 32
+            self._prefixlen = self._max_prefixlen
             self.netmask = IPv4Address(self._ip_int_from_prefix(
                 self._prefixlen))
         if strict:
@@ -1321,7 +1324,7 @@ class IPv4Network(_BaseV4, _BaseNet):
         if parts[0] < parts[-1]:
             return True
         return False
-    
+
     def _is_valid_netmask(self, netmask):
         """Verify that the netmask is valid.
 
@@ -1346,7 +1349,7 @@ class IPv4Network(_BaseV4, _BaseNet):
             netmask = int(netmask)
         except ValueError:
             return False
-        return 0 <= netmask <= 32
+        return 0 <= netmask <= self._max_prefixlen
 
     # backwards compatibility
     IsRFC1918 = lambda self: self.is_private
@@ -1364,11 +1367,11 @@ class _BaseV6(object):
 
     """
 
-    _ALL_ONES = (2**128) - 1
+    _ALL_ONES = (2**IPV6LENGTH) - 1
 
     def __init__(self, address):
         self._version = 6
-        self._max_prefixlen = 128
+        self._max_prefixlen = IPV6LENGTH
 
     def _ip_int_from_string(self, ip_str=None):
         """Turn an IPv6 ip_str into an integer.
@@ -1758,6 +1761,9 @@ class IPv6Address(_BaseV6, _BaseIP):
         if not addr_str:
             raise AddressValueError('')
 
+        if not self._is_valid_ip(addr_str):
+            raise AddressValueError(addr_str)
+
         self._ip = self._ip_int_from_string(addr_str)
 
 
@@ -1815,7 +1821,7 @@ class IPv6Network(_BaseV6, _BaseNet):
         if isinstance(address, (int, long)):
             self._ip = address
             self.ip = IPv6Address(self._ip)
-            self._prefixlen = 128
+            self._prefixlen = self._max_prefixlen
             self.netmask = IPv6Address(self._ALL_ONES)
             if address < 0 or address > self._ALL_ONES:
                 raise AddressValueError(address)
@@ -1827,7 +1833,7 @@ class IPv6Network(_BaseV6, _BaseNet):
                 tmp = struct.unpack('!QQ', address)
                 self._ip = (tmp[0] << 64) | tmp[1]
                 self.ip = IPv6Address(self._ip)
-                self._prefixlen = 128
+                self._prefixlen = self._max_prefixlen
                 self.netmask = IPv6Address(self._ALL_ONES)
                 return
 
@@ -1847,7 +1853,7 @@ class IPv6Network(_BaseV6, _BaseNet):
             else:
                 raise NetmaskValueError(addr[1])
         else:
-            self._prefixlen = 128
+            self._prefixlen = self._max_prefixlen
 
         self.netmask = IPv6Address(self._ip_int_from_prefix(self._prefixlen))
 
@@ -1875,7 +1881,7 @@ class IPv6Network(_BaseV6, _BaseNet):
             prefixlen = int(prefixlen)
         except ValueError:
             return False
-        return 0 <= prefixlen <= 128
+        return 0 <= prefixlen <= self._max_prefixlen
 
     @property
     def with_netmask(self):
