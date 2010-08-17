@@ -4,6 +4,12 @@
 
 Here are the visible changes for each release.
 
+== 2.1.4 ==
+
+(2010-08-15)
+
+  * fix for issue66, more invalid IPv6 addresses will be rejected
+
 == 2.1.3 ==
 
 (2010-06-12)
