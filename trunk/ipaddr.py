@@ -594,6 +594,9 @@ class _BaseNet(_IPAddrBase):
         return hash(int(self.network) ^ int(self.netmask))
 
     def __contains__(self, other):
+        # always false if one is v4 and the other is v6.
+        if self._version != other._version:
+          return False
         # dealing with another network.
         if isinstance(other, _BaseNet):
             return (self.network <= other.network and

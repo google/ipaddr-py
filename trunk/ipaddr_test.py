@@ -147,6 +147,9 @@ class IpaddrUnitTest(unittest.TestCase):
         v6addr = ipaddr.IPAddress('::1')
         v6net = ipaddr.IPNetwork('::1/128')
 
+        self.assertFalse(v4net.__contains__(v6net))
+        self.assertFalse(v6net.__contains__(v4net))
+
         self.assertRaises(TypeError, lambda: v4addr < v4net)
         self.assertRaises(TypeError, lambda: v4addr > v4net)
         self.assertRaises(TypeError, lambda: v4net < v4addr)
