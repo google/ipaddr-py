@@ -190,14 +190,14 @@ class IpaddrUnitTest(unittest.TestCase):
 
     if ipaddr._compat_has_real_bytes: # on python3+
         def testIpFromPacked(self):
-            ip = ipaddr.IP
+            ip = ipaddr.IPNetwork
 
             self.assertEqual(self.ipv4.ip,
                              ip(_cb('\x01\x02\x03\x04')).ip)
             self.assertEqual(ip('255.254.253.252'),
                              ip(_cb('\xff\xfe\xfd\xfc')))
-            self.assertRaises(ValueError, ipaddr.IP, _cb('\x00' * 3))
-            self.assertRaises(ValueError, ipaddr.IP, _cb('\x00' * 5))
+            self.assertRaises(ValueError, ipaddr.IPNetwork, _cb('\x00' * 3))
+            self.assertRaises(ValueError, ipaddr.IPNetwork, _cb('\x00' * 5))
             self.assertEqual(self.ipv6.ip,
                              ip(_cb('\x20\x01\x06\x58\x02\x2a\xca\xfe'
                                '\x02\x00\x00\x00\x00\x00\x00\x01')).ip)
