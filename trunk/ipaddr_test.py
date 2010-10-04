@@ -934,7 +934,7 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(str(self.ipv6.with_netmask),
                          '2001:658:22a:cafe:200::1/64')
         # this probably don't make much sense, but it's included for
-        # compatability with ipv4
+        # compatibility with ipv4
         self.assertEqual(str(self.ipv6.with_hostmask),
                          '2001:658:22a:cafe:200::1/::ffff:ffff:ffff:ffff')
 
