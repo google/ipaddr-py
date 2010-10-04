@@ -659,6 +659,10 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(self.ipv4.version, 4)
         self.assertEqual(self.ipv6.version, 6)
 
+    def testMaxPrefixLength(self):
+        self.assertEqual(self.ipv4.max_prefixlen, 32)
+        self.assertEqual(self.ipv6.max_prefixlen, 128)
+
     def testPacked(self):
         self.assertEqual(self.ipv4.packed,
                          _cb('\x01\x02\x03\x04'))
