@@ -1394,10 +1394,9 @@ class _BaseV6(object):
 
         ip_int = 0
 
-        fields = self._explode_shorthand_ip_string(ip_str).split(':')
-
         # Do we have an IPv4 mapped (::ffff:a.b.c.d) or compact (::a.b.c.d)
         # ip_str?
+        fields = ip_str.split(':')
         if fields[-1].count('.') == 3:
             ipv4_string = fields.pop()
             ipv4_int = IPv4Network(ipv4_string)._ip
@@ -1406,7 +1405,9 @@ class _BaseV6(object):
                 octets.append(hex(ipv4_int & 0xFFFF).lstrip('0x').rstrip('L'))
                 ipv4_int >>= 16
             fields.extend(reversed(octets))
+            ip_str = ':'.join(fields)
 
+        fields = self._explode_shorthand_ip_string(ip_str).split(':')
         for field in fields:
             try:
                 ip_int = (ip_int << 16) + int(field or '0', 16)

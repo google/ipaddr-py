@@ -655,6 +655,15 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv6Network,
                           '2001:1.1.1.1:1.1.1.1')
 
+    # Issue 67: IPv6 with embedded IPv4 address not recognized.
+    def testIPv6AddressTooLarge(self):
+        # RFC4291 2.5.5.2
+        self.assertEquals(ipaddr.IPAddress('::FFFF:192.0.2.1'),
+                          ipaddr.IPAddress('::FFFF:c000:201'))
+        # RFC4291 2.2 (part 3) x::d.d.d.d 
+        self.assertEquals(ipaddr.IPAddress('FFFF::192.0.2.1'),
+                          ipaddr.IPAddress('FFFF::c000:201'))
+
     def testIPVersion(self):
         self.assertEqual(self.ipv4.version, 4)
         self.assertEqual(self.ipv6.version, 6)
