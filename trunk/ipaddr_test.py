@@ -621,6 +621,21 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertFalse(ip2 > ip3)
         self.assertTrue(ip3 > ip2)
 
+        # Regression test for issue 28.
+        ip1 = ipaddr.IPNetwork('10.10.10.0/31')
+        ip2 = ipaddr.IPNetwork('10.10.10.0')
+        ip3 = ipaddr.IPNetwork('10.10.10.2/31')
+        ip4 = ipaddr.IPNetwork('10.10.10.2')
+        sorted = [ip1, ip2, ip3, ip4]
+        unsorted = [ip2, ip4, ip1, ip3]
+        unsorted.sort()
+        self.assertEqual(sorted, unsorted)
+        unsorted = [ip4, ip1, ip3, ip2]
+        unsorted.sort()
+        self.assertEqual(sorted, unsorted)
+        self.assertRaises(TypeError, ip1.__lt__, ipaddr.IPAddress('10.10.10.0'))
+        self.assertRaises(TypeError, ip2.__lt__, ipaddr.IPAddress('10.10.10.0'))
+
         # <=, >=
         self.assertTrue(ipaddr.IPNetwork('1.1.1.1') <=
                         ipaddr.IPNetwork('1.1.1.1'))
