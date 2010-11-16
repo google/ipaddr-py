@@ -851,6 +851,10 @@ class IpaddrUnitTest(unittest.TestCase):
                           hash(ipaddr.IPNetwork('10.1.1.0/24')))
         self.assertEquals(hash(ipaddr.IPAddress('10.1.1.0')),
                           hash(ipaddr.IPAddress('10.1.1.0')))
+        # i70
+        self.assertEquals(hash(ipaddr.IPAddress('1.2.3.4')),
+                          hash(ipaddr.IPAddress(
+                    long(ipaddr.IPAddress('1.2.3.4')._ip))))
         ip1 = ipaddr.IPAddress('10.1.1.0')
         ip2 = ipaddr.IPAddress('1::')
         dummy = {}
