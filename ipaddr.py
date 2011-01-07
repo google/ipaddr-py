@@ -29,7 +29,6 @@ import struct
 IPV4LENGTH = 32
 IPV6LENGTH = 128
 
-
 class AddressValueError(ValueError):
     """A Value Error related to the address."""
 
@@ -117,6 +116,36 @@ def IPNetwork(address, version=None, strict=False):
 
     raise ValueError('%r does not appear to be an IPv4 or IPv6 network' %
                      address)
+
+
+def v4_int_to_packed(address):
+    """The binary representation of this address.
+
+    Args:
+        address: An integer representation of an IPv4 IP address.
+
+    Returns:
+        The binary representation of this address.
+
+    Raises:
+        ValueError: If the integer is too large to be an IPv4 IP
+          address.
+    """
+    if address > _BaseV4._ALL_ONES:
+        raise ValueError('Address too large for IPv4')
+    return struct.pack('!I', address)
+
+
+def v6_int_to_packed(address):
+    """The binary representation of this address.
+
+    Args:
+        address: An integer representation of an IPv4 IP address.
+
+    Returns:
+        The binary representation of this address.
+    """
+    return struct.pack('!QQ', address >> 64, address & (2**64 - 1))
 
 
 def _find_address_range(addresses):
@@ -1065,7 +1094,7 @@ class _BaseV4(object):
     @property
     def packed(self):
         """The binary representation of this address."""
-        return struct.pack('!I', self._ip)
+        return v4_int_to_packed(self._ip)
 
     @property
     def version(self):
@@ -1604,7 +1633,7 @@ class _BaseV6(object):
     @property
     def packed(self):
         """The binary representation of this address."""
-        return struct.pack('!QQ', self._ip >> 64, self._ip & (2**64 - 1))
+        return v6_int_to_packed(self._ip)
 
     @property
     def version(self):
