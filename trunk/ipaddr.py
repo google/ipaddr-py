@@ -1753,14 +1753,29 @@ class _BaseV6(object):
         """Tuple of embedded teredo IPs.
 
         Returns:
-            Tuple of the (server, client) IPs.
+            Tuple of the (server, client) IPs or False if the address
+            doesn't appear to be a teredo address (doesn't start with
+            2001)
 
-        Note:
-            This doesn't try to verify that the address is a teredo address
         """
         bits = self._explode_shorthand_ip_string().split(':')
+        if not bits[0] == '2001':
+            return False
         return (IPv4Address(int(''.join(bits[2:4]), 16)),
                 IPv4Address(int(''.join(bits[6:]), 16) ^ 0xFFFFFFFF))
+
+    def sixtofour(self):
+        """Return the IPv4 6to4 embedded address.
+
+        Returns:
+            The IPv4 6to4-embedded address if present or False if the
+            address doesn't appear to contain a 6to4 embedded address.
+
+        """
+        bits = self._explode_shorthand_ip_string().split(':')
+        if not bits[0] == '2002':
+            return False
+        return IPv4Address(int(''.join(bits[1:3]), 16))
 
 
 class IPv6Address(_BaseV6, _BaseIP):
