@@ -1017,5 +1017,13 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertFalse(ip._is_valid_ip('2001:658:22a:zzzz:200::1'))
         self.assertFalse(ip._is_valid_ip('2001:658:22a:cafe1:200::1'))
 
+    def testTeredo(self):
+        # stolen from wikipedia
+        server = ipaddr.IPv4Address('65.54.227.120')
+        client = ipaddr.IPv4Address('192.0.2.45')
+        teredo_addr = '2001:0000:4136:e378:8000:63bf:3fff:fdd2'
+        self.assertEqual((server, client),
+                         ipaddr.IPAddress(teredo_addr).teredo())
+
 if __name__ == '__main__':
     unittest.main()

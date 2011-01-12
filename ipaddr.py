@@ -29,6 +29,7 @@ import struct
 IPV4LENGTH = 32
 IPV6LENGTH = 128
 
+
 class AddressValueError(ValueError):
     """A Value Error related to the address."""
 
@@ -1748,6 +1749,20 @@ class _BaseV6(object):
         except AddressValueError:
             return None
 
+    def teredo(self):
+        """Tuple of embedded teredo IPs.
+
+        Returns:
+            Tuple of the (server, client) IPs.
+
+        Note:
+            This doesn't try to verify that the address is a teredo address
+        """
+        server_bits = self._explode_shorthand_ip_string().split(':')[2:4]
+        client_bits = self._explode_shorthand_ip_string().split(':')[6:]
+        return (IPv4Address(int(''.join(server_bits), 16)),
+                IPv4Address(int(''.join(client_bits), 16) ^ 0xFFFFFFFF))
+
 
 class IPv6Address(_BaseV6, _BaseIP):
 
@@ -1897,7 +1912,6 @@ class IPv6Network(_BaseV6, _BaseNet):
             if self.ip != self.network:
                 raise ValueError('%s has host bits set' %
                                  self.ip)
-
 
     def _is_valid_netmask(self, prefixlen):
         """Verify that the netmask/prefixlen is valid.
