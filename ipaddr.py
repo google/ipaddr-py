@@ -1758,10 +1758,9 @@ class _BaseV6(object):
         Note:
             This doesn't try to verify that the address is a teredo address
         """
-        server_bits = self._explode_shorthand_ip_string().split(':')[2:4]
-        client_bits = self._explode_shorthand_ip_string().split(':')[6:]
-        return (IPv4Address(int(''.join(server_bits), 16)),
-                IPv4Address(int(''.join(client_bits), 16) ^ 0xFFFFFFFF))
+        bits = self._explode_shorthand_ip_string().split(':')
+        return (IPv4Address(int(''.join(bits[2:4]), 16)),
+                IPv4Address(int(''.join(bits[6:]), 16) ^ 0xFFFFFFFF))
 
 
 class IPv6Address(_BaseV6, _BaseIP):
