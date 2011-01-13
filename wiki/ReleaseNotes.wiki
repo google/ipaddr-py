@@ -4,7 +4,15 @@
 
 Here are the visible changes for each release.
 
+== 2.1.7 ==
+
+(2011-01-13)
+
+  * turn teredo and sixtofour into properties as opposed to normal methods.
+
 == 2.1.6 ==
+
+(2011-01-13)
 
   * typo fixes.
   * fix for ipaddr_test referring to an old version of ipaddr.
