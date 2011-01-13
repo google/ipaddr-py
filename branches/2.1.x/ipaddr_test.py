@@ -1023,16 +1023,16 @@ class IpaddrUnitTest(unittest.TestCase):
         client = ipaddr.IPv4Address('192.0.2.45')
         teredo_addr = '2001:0000:4136:e378:8000:63bf:3fff:fdd2'
         self.assertEqual((server, client),
-                         ipaddr.IPAddress(teredo_addr).teredo())
+                         ipaddr.IPAddress(teredo_addr).teredo)
         bad_addr = '2000::4136:e378:8000:63bf:3fff:fdd2'
-        self.assertFalse(ipaddr.IPAddress(bad_addr).teredo())
+        self.assertFalse(ipaddr.IPAddress(bad_addr).teredo)
 
     def testsixtofour(self):
         sixtofouraddr = ipaddr.IPAddress('2002:ac1d:2d64::1')
         bad_addr = ipaddr.IPAddress('2000:ac1d:2d64::1')
         self.assertEqual(ipaddr.IPv4Address('172.29.45.100'),
-                         sixtofouraddr.sixtofour())
-        self.assertFalse(bad_addr.sixtofour())
+                         sixtofouraddr.sixtofour)
+        self.assertFalse(bad_addr.sixtofour)
 
 
 if __name__ == '__main__':

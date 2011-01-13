@@ -22,7 +22,7 @@ and networks.
 
 """
 
-__version__ = '2.1.6'
+__version__ = 'trunk'
 
 import struct
 
@@ -1749,32 +1749,34 @@ class _BaseV6(object):
         except AddressValueError:
             return None
 
+    @property
     def teredo(self):
         """Tuple of embedded teredo IPs.
 
         Returns:
-            Tuple of the (server, client) IPs or False if the address
+            Tuple of the (server, client) IPs or None if the address
             doesn't appear to be a teredo address (doesn't start with
             2001)
 
         """
         bits = self._explode_shorthand_ip_string().split(':')
         if not bits[0] == '2001':
-            return False
+            return None
         return (IPv4Address(int(''.join(bits[2:4]), 16)),
                 IPv4Address(int(''.join(bits[6:]), 16) ^ 0xFFFFFFFF))
 
+    @property
     def sixtofour(self):
         """Return the IPv4 6to4 embedded address.
 
         Returns:
-            The IPv4 6to4-embedded address if present or False if the
+            The IPv4 6to4-embedded address if present or None if the
             address doesn't appear to contain a 6to4 embedded address.
 
         """
         bits = self._explode_shorthand_ip_string().split(':')
         if not bits[0] == '2002':
-            return False
+            return None
         return IPv4Address(int(''.join(bits[1:3]), 16))
 
 
