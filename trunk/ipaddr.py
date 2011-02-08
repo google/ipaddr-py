@@ -436,7 +436,8 @@ class _BaseIP(_IPAddrBase):
     """
 
     def __init__(self, address):
-        if not isinstance(address, bytes) and '/' in str(address):
+        if (not (_compat_has_real_bytes and isinstance(address, bytes))
+            and '/' in str(address)):
             raise AddressValueError(address)
 
     def __eq__(self, other):
