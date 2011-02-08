@@ -608,10 +608,8 @@ class _BaseNet(_IPAddrBase):
                     and int(self.netmask) == int(other.netmask))
         except AttributeError:
             if isinstance(other, _BaseIP):
-                # If other is a _BaseIP, we pretend it's a network for
-                # this equality test. It's a slight hack, but it's a
-                # convenient one.
-                return self == IPNetwork(other._ip, version=other._version)
+                return (self._version == other._version
+                        and self._ip == other._ip)
 
     def __ne__(self, other):
         eq = self.__eq__(other)
@@ -1688,7 +1686,7 @@ class _BaseV6(object):
             RFC 2373 2.5.2.
 
         """
-        return (self == IPv6Network('::') or self == IPv6Address('::'))
+        return self._ip == 0 and getattr(self, '_prefixlen', 128) == 128
 
     @property
     def is_loopback(self):
@@ -1699,7 +1697,7 @@ class _BaseV6(object):
             RFC 2373 2.5.3.
 
         """
-        return (self == IPv6Network('::1') or self == IPv6Address('::1'))
+        return self._ip == 1 and getattr(self, '_prefixlen', 128) == 128
 
     @property
     def is_link_local(self):
