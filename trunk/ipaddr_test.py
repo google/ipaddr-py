@@ -423,9 +423,17 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertFalse(self.ipv4 == '')
         self.assertFalse(self.ipv4 == [])
         self.assertFalse(self.ipv4 == 2)
+        self.assertTrue(ipaddr.IPNetwork('1.1.1.1/32') ==
+                        ipaddr.IPAddress('1.1.1.1'))
+        self.assertFalse(ipaddr.IPNetwork('1.1.1.1/24') ==
+                         ipaddr.IPAddress('1.1.1.1'))
 
         self.assertTrue(self.ipv6 ==
             ipaddr.IPv6Network('2001:658:22a:cafe:200::1/64'))
+        self.assertTrue(ipaddr.IPNetwork('::1/128') ==
+                        ipaddr.IPAddress('::1'))
+        self.assertFalse(ipaddr.IPNetwork('::1/127') ==
+                         ipaddr.IPAddress('::1'))
         self.assertFalse(self.ipv6 ==
             ipaddr.IPv6Network('2001:658:22a:cafe:200::1/63'))
         self.assertFalse(self.ipv6 == ipaddr.IPv4Network('1.2.3.4/23'))
@@ -433,10 +441,10 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertFalse(self.ipv6 == [])
         self.assertFalse(self.ipv6 == 2)
 
+
+
     def testNotEquals(self):
-        addr1 = ipaddr.IPAddress('1.2.3.4')
         self.assertFalse(self.ipv4 != ipaddr.IPv4Network('1.2.3.4/24'))
-        self.assertFalse(self.ipv4 == addr1)
         self.assertTrue(self.ipv4 != ipaddr.IPv4Network('1.2.3.4/23'))
         self.assertTrue(self.ipv4 != ipaddr.IPv6Network('::1.2.3.4/24'))
         self.assertTrue(self.ipv4 != '')
@@ -446,7 +454,6 @@ class IpaddrUnitTest(unittest.TestCase):
         addr2 = ipaddr.IPAddress('2001:658:22a:cafe:200::1')
         self.assertFalse(self.ipv6 !=
             ipaddr.IPv6Network('2001:658:22a:cafe:200::1/64'))
-        self.assertFalse(self.ipv6 == addr2)
         self.assertTrue(self.ipv6 !=
             ipaddr.IPv6Network('2001:658:22a:cafe:200::1/63'))
         self.assertTrue(self.ipv6 != ipaddr.IPv4Network('1.2.3.4/23'))

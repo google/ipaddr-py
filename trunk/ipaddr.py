@@ -442,8 +442,7 @@ class _BaseIP(_IPAddrBase):
     def __eq__(self, other):
         try:
             return (self._ip == other._ip
-                    and self._version == other._version
-                    and isinstance(other, _BaseIP))
+                    and self._version == other._version)
         except AttributeError:
             return NotImplemented
 
@@ -608,7 +607,11 @@ class _BaseNet(_IPAddrBase):
                     and self.network == other.network
                     and int(self.netmask) == int(other.netmask))
         except AttributeError:
-            return NotImplemented
+            if isinstance(other, _BaseIP):
+                # If other is a _BaseIP, we pretend it's a network for
+                # this equality test. It's a slight hack, but it's a
+                # convenient one.
+                return self == IPNetwork(other._ip, version=other._version)
 
     def __ne__(self, other):
         eq = self.__eq__(other)
