@@ -4,6 +4,15 @@
 
 Here are the visible changes for each release.
 
+== 2.1.8 ==
+
+(2011-02-09)
+
+This release fixes regressions.
+
+  * Address and networks now again compare true, if the address matches.
+  * ipaddr works again on Python 2.4 and 2.5.
+
 == 2.1.7 ==
 
 (2011-01-13)
