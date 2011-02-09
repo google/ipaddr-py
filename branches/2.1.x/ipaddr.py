@@ -436,14 +436,14 @@ class _BaseIP(_IPAddrBase):
     """
 
     def __init__(self, address):
-        if '/' in str(address):
+        if (not (_compat_has_real_bytes and isinstance(address, bytes))
+            and '/' in str(address)):
             raise AddressValueError(address)
 
     def __eq__(self, other):
         try:
             return (self._ip == other._ip
-                    and self._version == other._version
-                    and isinstance(other, _BaseIP))
+                    and self._version == other._version)
         except AttributeError:
             return NotImplemented
 
@@ -608,7 +608,9 @@ class _BaseNet(_IPAddrBase):
                     and self.network == other.network
                     and int(self.netmask) == int(other.netmask))
         except AttributeError:
-            return NotImplemented
+            if isinstance(other, _BaseIP):
+                return (self._version == other._version
+                        and self._ip == other._ip)
 
     def __ne__(self, other):
         eq = self.__eq__(other)
@@ -696,28 +698,28 @@ class _BaseNet(_IPAddrBase):
 
         For example:
 
-            addr1 = IP('10.1.1.0/24')
-            addr2 = IP('10.1.1.0/26')
+            addr1 = IPNetwork('10.1.1.0/24')
+            addr2 = IPNetwork('10.1.1.0/26')
             addr1.address_exclude(addr2) =
-                [IP('10.1.1.64/26'), IP('10.1.1.128/25')]
+                [IPNetwork('10.1.1.64/26'), IPNetwork('10.1.1.128/25')]
 
         or IPv6:
 
-            addr1 = IP('::1/32')
-            addr2 = IP('::1/128')
-            addr1.address_exclude(addr2) = [IP('::0/128'),
-                IP('::2/127'),
-                IP('::4/126'),
-                IP('::8/125'),
+            addr1 = IPNetwork('::1/32')
+            addr2 = IPNetwork('::1/128')
+            addr1.address_exclude(addr2) = [IPNetwork('::0/128'),
+                IPNetwork('::2/127'),
+                IPNetwork('::4/126'),
+                IPNetwork('::8/125'),
                 ...
-                IP('0:0:8000::/33')]
+                IPNetwork('0:0:8000::/33')]
 
         Args:
-            other: An IP object of the same type.
+            other: An IPvXNetwork object of the same type.
 
         Returns:
-            A sorted list of IP objects addresses which is self minus
-            other.
+            A sorted list of IPvXNetwork objects addresses which is self
+            minus other.
 
         Raises:
             TypeError: If self and other are of difffering address
@@ -1685,7 +1687,7 @@ class _BaseV6(object):
             RFC 2373 2.5.2.
 
         """
-        return (self == IPv6Network('::') or self == IPv6Address('::'))
+        return self._ip == 0 and getattr(self, '_prefixlen', 128) == 128
 
     @property
     def is_loopback(self):
@@ -1696,7 +1698,7 @@ class _BaseV6(object):
             RFC 2373 2.5.3.
 
         """
-        return (self == IPv6Network('::1') or self == IPv6Address('::1'))
+        return self._ip == 1 and getattr(self, '_prefixlen', 128) == 128
 
     @property
     def is_link_local(self):
