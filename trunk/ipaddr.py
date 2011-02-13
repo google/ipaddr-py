@@ -231,7 +231,7 @@ def summarize_address_range(first, last):
         raise TypeError('first and last must be IP addresses, not networks')
     if first.version != last.version:
         raise TypeError("%s and %s are not of the same version" % (
-                str(self), str(other)))
+                str(first), str(last)))
     if first > last:
         raise ValueError('last IP address must be greater than first')
 
