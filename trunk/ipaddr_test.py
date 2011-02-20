@@ -1040,6 +1040,13 @@ class IpaddrUnitTest(unittest.TestCase):
         bad_addr = '2000::4136:e378:8000:63bf:3fff:fdd2'
         self.assertFalse(ipaddr.IPAddress(bad_addr).teredo)
 
+        # i77
+        teredo_addr = ipaddr.IPv6Address('2001:0:5ef5:79fd:0:59d:a0e5:ba1')
+        self.assertEqual((ipaddr.IPv4Address('94.245.121.253'),
+                          ipaddr.IPv4Address('95.26.244.94')),
+                         teredo_addr.teredo)
+
+
     def testsixtofour(self):
         sixtofouraddr = ipaddr.IPAddress('2002:ac1d:2d64::1')
         bad_addr = ipaddr.IPAddress('2000:ac1d:2d64::1')
