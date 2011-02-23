@@ -8,7 +8,7 @@ Here are the visible changes for each release.
 
 (2011-02-22)
 
-The last outstanding issue.
+The last outstanding issues.
 
   * fix warnings from python3.2
   * fix bug in _is_shorthand_ip resulting in bad teredo addresses.
