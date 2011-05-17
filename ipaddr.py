@@ -270,12 +270,12 @@ def _collapse_address_list_recursive(addresses):
 
     Example:
 
-        ip1 = IPv4Network'1.1.0.0/24')
-        ip2 = IPv4Network'1.1.1.0/24')
-        ip3 = IPv4Network'1.1.2.0/24')
-        ip4 = IPv4Network'1.1.3.0/24')
-        ip5 = IPv4Network'1.1.4.0/24')
-        ip6 = IPv4Network'1.1.0.1/22')
+        ip1 = IPv4Network('1.1.0.0/24')
+        ip2 = IPv4Network('1.1.1.0/24')
+        ip3 = IPv4Network('1.1.2.0/24')
+        ip4 = IPv4Network('1.1.3.0/24')
+        ip5 = IPv4Network('1.1.4.0/24')
+        ip6 = IPv4Network('1.1.0.1/22')
 
         _collapse_address_list_recursive([ip1, ip2, ip3, ip4, ip5, ip6]) ->
           [IPv4Network('1.1.0.0/22'), IPv4Network('1.1.4.0/24')]
