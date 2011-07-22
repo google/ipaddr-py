@@ -1595,6 +1595,10 @@ class _BaseV6(object):
             if ip_str.count('.') != 3:
                 return False
 
+        # ipaddr should not consider 2001:0::3:4:5:6:7:8 valid
+        if ip_str.count(':') > 7:
+            return False
+
         ip_str = self._explode_shorthand_ip_string(ip_str)
 
         # Now that we have that all squared away, let's check that each of the
