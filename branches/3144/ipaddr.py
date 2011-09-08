@@ -583,21 +583,21 @@ class _BaseNetwork(_IPAddrBase):
 
         """
         cur = int(self.network_address_address) + 1
-        bcast = int(self.broadcast) - 1
+        bcast = int(self.broadcast_address) - 1
         while cur <= bcast:
             cur += 1
             yield ip_address(cur - 1, version=self._version)
 
     def __iter__(self):
         cur = int(self.network_address)
-        bcast = int(self.broadcast)
+        bcast = int(self.broadcast_address)
         while cur <= bcast:
             cur += 1
             yield ip_address(cur - 1, version=self._version)
 
     def __getitem__(self, n):
         network = int(self.network_address)
-        broadcast = int(self.broadcast)
+        broadcast = int(self.broadcast_address)
         if n >= 0:
             if network + n > broadcast:
                 raise IndexError
@@ -676,31 +676,31 @@ class _BaseNetwork(_IPAddrBase):
         # dealing with another network.
         if isinstance(other, _BaseNetwork):
             return (self.network_address <= other.network_address and
-                    self.broadcast >= other.broadcast)
+                    self.broadcast_address >= other.broadcast_address)
         # dealing with another address
         else:
             return (int(self.network_address) <= int(other._ip) <=
-                    int(self.broadcast))
+                    int(self.broadcast_address))
 
     def overlaps(self, other):
         """Tell if self is partly contained in other."""
-        return self.network_address in other or self.broadcast in other or (
-            other.network_address in self or other.broadcast in self)
+        return self.network_address in other or self.broadcast_address in other or (
+            other.network_address in self or other.broadcast_address in self)
 
     @property
     def network_address(self):
-        x = self._cache.get('network')
+        x = self._cache.get('network_address')
         if x is None:
             x = ip_address(self._ip & int(self.netmask), version=self._version)
-            self._cache['network'] = x
+            self._cache['network_address'] = x
         return x
 
     @property
-    def broadcast(self):
-        x = self._cache.get('broadcast')
+    def broadcast_address(self):
+        x = self._cache.get('broadcast_address')
         if x is None:
             x = ip_address(self._ip | int(self.hostmask), version=self._version)
-            self._cache['broadcast'] = x
+            self._cache['broadcast_address'] = x
         return x
 
     @property
@@ -727,7 +727,7 @@ class _BaseNetwork(_IPAddrBase):
     @property
     def numhosts(self):
         """Number of hosts in the current subnet."""
-        return int(self.broadcast) - int(self.network_address) + 1
+        return int(self.broadcast_address) - int(self.network_address) + 1
 
     @property
     def version(self):
@@ -977,8 +977,8 @@ class _BaseNetwork(_IPAddrBase):
         yield first
         current = first
         while True:
-            broadcast = current.broadcast
-            if broadcast == self.broadcast:
+            broadcast = current.broadcast_address
+            if broadcast == self.broadcast_address:
                 return
             new_addr = ip_address(int(broadcast) + 1, version=self._version)
             current = ip_network('%s/%s' % (str(new_addr), str(new_prefixlen)),
@@ -1263,7 +1263,7 @@ class IPv4Interface(_BaseV4, _BaseNetwork):
         .ip: IPv4Address('1.2.3.4')
         .network_address: IPv4Address('1.2.3.0')
         .hostmask: IPv4Address('0.0.0.31')
-        .broadcast: IPv4Address('1.2.3.31')
+        .broadcast_address: IPv4Address('1.2.3.31')
         .netmask: IPv4Address('255.255.255.224')
         .prefixlen: 27
 
@@ -1868,7 +1868,7 @@ class IPv6Interface(_BaseV6, _BaseNetwork):
         .ip: IPv6Address('2001:658:22a:cafe:200::1')
         .network_address: IPv6Address('2001:658:22a:cafe::')
         .hostmask: IPv6Address('::ffff:ffff:ffff:ffff')
-        .broadcast: IPv6Address('2001:658:22a:cafe:ffff:ffff:ffff:ffff')
+        .broadcast_address: IPv6Address('2001:658:22a:cafe:ffff:ffff:ffff:ffff')
         .netmask: IPv6Address('ffff:ffff:ffff:ffff::')
         .prefixlen: 64
 
