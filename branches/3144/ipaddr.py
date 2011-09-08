@@ -387,7 +387,10 @@ def collapse_address_list(addresses):
             if ips and ips[-1]._version != ip._version:
                 raise TypeError("%s and %s are not of the same version" % (
                         str(ip), str(ips[-1])))
-            ips.append(ip.ip)
+            try:
+                ips.append(ip.ip)
+            except AttributeError:
+                ips.append(ip.network_address)
         else:
             if nets and nets[-1]._version != ip._version:
                 raise TypeError("%s and %s are not of the same version" % (
@@ -1429,6 +1432,23 @@ class IPv4Interface(_BaseV4, _BaseNetwork):
 class IPv4Network(IPv4Interface):
     def __init__(self, address):
         IPv4Interface.__init__(self, address, strict=True)
+        del self.__dict__['ip']
+
+    def __str__(self):
+        return '%s/%d' % (str(self.network_address),
+                          self.prefixlen)
+
+    @property
+    def with_prefixlen(self):
+        return '%s/%d' % (str(self.network_address), self._prefixlen)
+
+    @property
+    def with_netmask(self):
+        return '%s/%s' % (str(self.network_address), str(self.netmask))
+
+    @property
+    def with_hostmask(self):
+        return '%s/%s' % (str(self.network_address), str(self.hostmask))
 
 
 class _BaseV6(object):
@@ -1960,3 +1980,20 @@ class IPv6Interface(_BaseV6, _BaseNetwork):
 class IPv6Network(IPv6Interface):
     def __init__(self, address):
         IPv6Interface.__init__(self, address, strict=True)
+        del self.__dict__['ip']
+
+    def __str__(self):
+        return '%s/%d' % (str(self.network_address),
+                          self.prefixlen)
+
+    @property
+    def with_prefixlen(self):
+        return '%s/%d' % (str(self.network_address), self._prefixlen)
+
+    @property
+    def with_netmask(self):
+        return '%s/%s' % (str(self.network_address), str(self.netmask))
+
+    @property
+    def with_hostmask(self):
+        return '%s/%s' % (str(self.network_address), str(self.hostmask))
