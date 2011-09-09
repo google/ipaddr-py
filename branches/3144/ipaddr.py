@@ -407,7 +407,7 @@ def collapse_address_list(addresses):
         addrs.extend(summarize_address_range(first, last))
 
     return _collapse_address_list_recursive(sorted(
-        addrs + nets, key=_BaseNetwork._get_networks_key))
+        addrs + nets, key=_BaseInterface._get_networks_key))
 
 # backwards compatibility
 CollapseAddrList = collapse_address_list
@@ -440,7 +440,7 @@ def get_mixed_type_key(obj):
       appropriate key.
 
     """
-    if isinstance(obj, _BaseNetwork):
+    if isinstance(obj, _BaseInterface):
         return obj._get_networks_key()
     elif isinstance(obj, _BaseAddress):
         return obj._get_address_key()
@@ -560,7 +560,7 @@ class _BaseAddress(_IPAddrBase):
         raise NotImplementedError('BaseIP has no version')
 
 
-class _BaseNetwork(_IPAddrBase):
+class _BaseInterface(_IPAddrBase):
 
     """A generic IP object.
 
@@ -612,7 +612,7 @@ class _BaseNetwork(_IPAddrBase):
         if self._version != other._version:
             raise TypeError('%s and %s are not of the same version' % (
                     str(self), str(other)))
-        if not isinstance(other, _BaseNetwork):
+        if not isinstance(other, _BaseInterface):
             raise TypeError('%s and %s are not of the same type' % (
                     str(self), str(other)))
         if self.network_address != other.network_address:
@@ -625,7 +625,7 @@ class _BaseNetwork(_IPAddrBase):
         if self._version != other._version:
             raise TypeError('%s and %s are not of the same version' % (
                     str(self), str(other)))
-        if not isinstance(other, _BaseNetwork):
+        if not isinstance(other, _BaseInterface):
             raise TypeError('%s and %s are not of the same type' % (
                     str(self), str(other)))
         if self.network_address != other.network_address:
@@ -674,7 +674,7 @@ class _BaseNetwork(_IPAddrBase):
         if self._version != other._version:
           return False
         # dealing with another network.
-        if isinstance(other, _BaseNetwork):
+        if isinstance(other, _BaseInterface):
             return (self.network_address <= other.network_address and
                     self.broadcast_address >= other.broadcast_address)
         # dealing with another address
@@ -684,8 +684,10 @@ class _BaseNetwork(_IPAddrBase):
 
     def overlaps(self, other):
         """Tell if self is partly contained in other."""
-        return self.network_address in other or self.broadcast_address in other or (
-            other.network_address in self or other.broadcast_address in self)
+        return self.network_address in other or (
+            self.broadcast_address in other or (
+                other.network_address in self or (
+                    other.broadcast_address in self)))
 
     @property
     def network_address(self):
@@ -711,6 +713,11 @@ class _BaseNetwork(_IPAddrBase):
                           version=self._version)
             self._cache['hostmask'] = x
         return x
+
+    @property
+    def network(self):
+        return ip_network('%s/%d' % (str(self.network_address),
+                                     self.prefixlen))
 
     @property
     def with_prefixlen(self):
@@ -775,7 +782,7 @@ class _BaseNetwork(_IPAddrBase):
             raise TypeError("%s and %s are not of the same version" % (
                 str(self), str(other)))
 
-        if not isinstance(other, _BaseNetwork):
+        if not isinstance(other, _BaseInterface):
             raise TypeError("%s is not a network object" % str(other))
 
         if other not in self:
@@ -814,7 +821,7 @@ class _BaseNetwork(_IPAddrBase):
                                    's1: %s s2: %s other: %s' %
                                    (str(s1), str(s2), str(other)))
 
-        return sorted(ret_addrs, key=_BaseNetwork._get_networks_key)
+        return sorted(ret_addrs, key=_BaseInterface._get_networks_key)
 
     def compare_networks(self, other):
         """Compare two IP objects.
@@ -1254,7 +1261,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
         self._ip = self._ip_int_from_string(addr_str)
 
 
-class IPv4Interface(_BaseV4, _BaseNetwork):
+class IPv4Interface(_BaseV4, _BaseInterface):
 
     """This class represents and manipulates 32-bit IPv4 networks.
 
@@ -1312,7 +1319,7 @@ class IPv4Interface(_BaseV4, _BaseNetwork):
               supplied.
 
         """
-        _BaseNetwork.__init__(self, address)
+        _BaseInterface.__init__(self, address)
         _BaseV4.__init__(self, address)
 
         # Efficient constructor from integer.
@@ -1654,7 +1661,7 @@ class _BaseV6(object):
         """
         if not ip_str:
             ip_str = str(self)
-            if isinstance(self, _BaseNetwork):
+            if isinstance(self, _BaseInterface):
                 ip_str = str(self.ip)
 
         ip_int = self._ip_int_from_string(ip_str)
@@ -1860,7 +1867,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
         self._ip = self._ip_int_from_string(addr_str)
 
 
-class IPv6Interface(_BaseV6, _BaseNetwork):
+class IPv6Interface(_BaseV6, _BaseInterface):
 
     """This class represents and manipulates 128-bit IPv6 networks.
 
@@ -1907,7 +1914,7 @@ class IPv6Interface(_BaseV6, _BaseNetwork):
               supplied.
 
         """
-        _BaseNetwork.__init__(self, address)
+        _BaseInterface.__init__(self, address)
         _BaseV6.__init__(self, address)
 
         # Efficient constructor from integer.
