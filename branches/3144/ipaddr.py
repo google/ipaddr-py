@@ -1279,7 +1279,7 @@ class IPv4Interface(_BaseV4, _BaseInterface):
     # the valid octets for host and netmasks. only useful for IPv4.
     _valid_mask_octets = set((255, 254, 252, 248, 240, 224, 192, 128, 0))
 
-    def __init__(self, address, strict=False):
+    def __init__(self, address):
         """Instantiate a new IPv4 network object.
 
         Args:
@@ -1377,10 +1377,6 @@ class IPv4Interface(_BaseV4, _BaseInterface):
             self._prefixlen = self._max_prefixlen
             self.netmask = IPv4Address(self._ip_int_from_prefix(
                 self._prefixlen))
-        if strict:
-            if self.ip != self.network_address:
-                raise ValueError('%s has host bits set' %
-                                 self.ip)
 
     def _is_hostmask(self, ip_str):
         """Test if the IP string is a hostmask (rather than a netmask).
@@ -1438,7 +1434,10 @@ class IPv4Interface(_BaseV4, _BaseInterface):
 
 class IPv4Network(IPv4Interface):
     def __init__(self, address):
-        IPv4Interface.__init__(self, address, strict=True)
+        IPv4Interface.__init__(self, address)
+        if self.ip != self.network_address:
+          raise ValueError('%s has host bits set' %
+                           self.ip)
         del self.__dict__['ip']
 
     def __str__(self):
@@ -1882,7 +1881,7 @@ class IPv6Interface(_BaseV6, _BaseInterface):
     """
 
 
-    def __init__(self, address, strict=False):
+    def __init__(self, address):
         """Instantiate a new IPv6 Network object.
 
         Args:
@@ -1957,10 +1956,6 @@ class IPv6Interface(_BaseV6, _BaseInterface):
 
         self.netmask = IPv6Address(self._ip_int_from_prefix(self._prefixlen))
 
-        if strict:
-            if self.ip != self.network_address:
-                raise ValueError('%s has host bits set' %
-                                 self.ip)
 
     def _is_valid_netmask(self, prefixlen):
         """Verify that the netmask/prefixlen is valid.
@@ -1986,8 +1981,13 @@ class IPv6Interface(_BaseV6, _BaseInterface):
 
 class IPv6Network(IPv6Interface):
     def __init__(self, address):
-        IPv6Interface.__init__(self, address, strict=True)
+        IPv6Interface.__init__(self, address)
+
+        if self.ip != self.network_address:
+          raise ValueError('%s has host bits set' %
+                           self.ip)
         del self.__dict__['ip']
+
 
     def __str__(self):
         return '%s/%d' % (str(self.network_address),

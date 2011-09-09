@@ -31,11 +31,10 @@ else:
 class IpaddrUnitTest(unittest.TestCase):
 
     def setUp(self):
-        self.ipv4 = ipaddr.IPv4Interface('1.2.3.4/24', strict=False)
-        self.ipv4_hostmask = ipaddr.IPv4Interface('10.0.0.1/0.255.255.255',
-                                                strict=False)
-        self.ipv6 = ipaddr.IPv6Interface('2001:658:22a:cafe:200:0:0:1/64',
-                                       strict=False)
+        self.ipv4 = ipaddr.IPv4Interface('1.2.3.4/24')
+        self.ipv4_hostmask = ipaddr.IPv4Interface('10.0.0.1/0.255.255.255')
+
+        self.ipv6 = ipaddr.IPv6Interface('2001:658:22a:cafe:200:0:0:1/64')
 
     def tearDown(self):
         del(self.ipv4)
@@ -689,8 +688,10 @@ class IpaddrUnitTest(unittest.TestCase):
         unsorted = [ip4, ip1, ip3, ip2]
         unsorted.sort()
         self.assertEqual(sorted, unsorted)
-        self.assertRaises(TypeError, ip1.__lt__, ipaddr.ip_address('10.10.10.0'))
-        self.assertRaises(TypeError, ip2.__lt__, ipaddr.ip_address('10.10.10.0'))
+        self.assertRaises(TypeError, ip1.__lt__,
+                          ipaddr.ip_address('10.10.10.0'))
+        self.assertRaises(TypeError, ip2.__lt__,
+                          ipaddr.ip_address('10.10.10.0'))
 
         # <=, >=
         self.assertTrue(ipaddr.ip_network('1.1.1.1') <=
