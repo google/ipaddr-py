@@ -82,8 +82,8 @@ def ip_network(address, version=None):
     """Take an IP string/int and return an object of the correct type.
 
     Args:
-        address: A string or integer, the IP address.  Either IPv4 or
-          IPv6 addresses may be supplied; integers less than 2**32 will
+        address: A string or integer, the IP network.  Either IPv4 or
+          IPv6 networks may be supplied; integers less than 2**32 will
           be considered to be IPv4 by default.
         version: An Integer, if set, don't try to automatically
           determine what the IP address type is. important for things
@@ -95,8 +95,7 @@ def ip_network(address, version=None):
 
     Raises:
         ValueError: if the string passed isn't either a v4 or a v6
-          address. Or if a strict network was requested and a strict
-          network wasn't given.
+          address. Or if the network has host bits set.
 
     """
     if version:
@@ -136,9 +135,12 @@ def ip_interface(address, version=None):
 
     Raises:
         ValueError: if the string passed isn't either a v4 or a v6
-          address. Or if a strict network was requested and a strict
-          network wasn't given.
+          address.
 
+    Notes:
+        The IPv?Interface classes describe an Address on a particular
+        Network, so they're basically a combination of both the Address
+        and Network classes.
     """
     if version:
         if version == 4:
@@ -316,7 +318,6 @@ def _collapse_address_list_recursive(addresses):
         ip3 = IPv4Network('1.1.2.0/24')
         ip4 = IPv4Network('1.1.3.0/24')
         ip5 = IPv4Network('1.1.4.0/24')
-        ip6 = IPv4Network('1.1.0.1/22')
 
         _collapse_address_list_recursive([ip1, ip2, ip3, ip4, ip5, ip6]) ->
           [IPv4Network('1.1.0.0/22'), IPv4Network('1.1.4.0/24')]
@@ -357,8 +358,9 @@ def collapse_address_list(addresses):
     """Collapse a list of IP objects.
 
     Example:
-        collapse_address_list([IPv4('1.1.0.0/24'), IPv4('1.1.1.0/24')]) ->
-          [IPv4('1.1.0.0/23')]
+        collapse_address_list([IPv4Network('1.1.0.0/24'),
+                               IPv4Network('1.1.1.0/24')]) ->
+                              [IPv4Network('1.1.0.0/23')]
 
     Args:
         addresses: A list of IPv4Network or IPv6Network objects.
@@ -871,7 +873,8 @@ class _BaseInterface(_IPAddrBase):
             return -1
         if self.netmask > other.netmask:
             return 1
-        # self.network_address == other.network_address and self.netmask == other.netmask
+        # self.network_address == other.network_address and
+        # self.netmask == other.netmask
         return 0
 
     def _get_networks_key(self):
@@ -1263,9 +1266,9 @@ class IPv4Address(_BaseV4, _BaseAddress):
 
 class IPv4Interface(_BaseV4, _BaseInterface):
 
-    """This class represents and manipulates 32-bit IPv4 networks.
+    """This class represents and manipulates 32-bit IPv4 network + addresses..
 
-    Attributes: [examples for IPv4Network('1.2.3.4/27')]
+    Attributes: [examples for IPv4Interface('1.2.3.4/27')]
         ._ip: 16909060
         .ip: IPv4Address('1.2.3.4')
         .network_address: IPv4Address('1.2.3.0')
@@ -1302,14 +1305,10 @@ class IPv4Interface(_BaseV4, _BaseInterface):
               netmask == /0. If no mask is given, a default of /32 is used.
 
               Additionally, an integer can be passed, so
-              IPv4Network('192.168.1.1') == IPv4Network(3232235777).
+              IPv4Interface('192.168.1.1') == IPv4Interface(3232235777).
               or, more generally
-              IPv4Network(int(IPv4Network('192.168.1.1'))) ==
-                IPv4Network('192.168.1.1')
-
-            strict: A boolean. If true, ensure that we have been passed
-              A true network address, eg, 192.168.1.0/24 and not an
-              IP address on a network, eg, 192.168.1.1/24.
+              IPv4Interface(int(IPv4Interface('192.168.1.1'))) ==
+                IPv4Interface('192.168.1.1')
 
         Raises:
             AddressValueError: If ipaddr isn't a valid IPv4 address.
