@@ -134,7 +134,7 @@ def v4_int_to_packed(address):
     """
     if address > _BaseV4._ALL_ONES:
         raise ValueError('Address too large for IPv4')
-    return struct.pack('!I', address)
+    return Bytes(struct.pack('!I', address))
 
 
 def v6_int_to_packed(address):
@@ -146,7 +146,7 @@ def v6_int_to_packed(address):
     Returns:
         The binary representation of this address.
     """
-    return struct.pack('!QQ', address >> 64, address & (2**64 - 1))
+    return Bytes(struct.pack('!QQ', address >> 64, address & (2**64 - 1)))
 
 
 def _find_address_range(addresses):
@@ -368,15 +368,27 @@ def collapse_address_list(addresses):
 # backwards compatibility
 CollapseAddrList = collapse_address_list
 
-# Test whether this Python implementation supports byte objects that
-# are not identical to str ones.
-# We need to exclude platforms where bytes == str so that we can
-# distinguish between packed representations and strings, for example
-# b'12::' (the IPv4 address 49.50.58.58) and '12::' (an IPv6 address).
+# We need to distinguish between the string and packed-bytes representations
+# of an IP address.  For example, b'0::1' is the IPv4 address 48.58.58.49,
+# while '0::1' is an IPv6 address.
+#
+# In Python 3, the native 'bytes' type already provides this functionality,
+# so we use it directly.  For earlier implementations where bytes is not a
+# distinct type, we create a subclass of str to serve as a tag.
+#
+# Usage example (Python 2):
+#   ip = ipaddr.IPAddress(ipaddr.Bytes('xxxx'))
+#
+# Usage example (Python 3):
+#   ip = ipaddr.IPAddress(b'xxxx')
 try:
-    _compat_has_real_bytes = bytes is not str
-except NameError: # <Python2.6
-    _compat_has_real_bytes = False
+    if bytes is str:
+        raise TypeError("bytes is not a distinct type")
+    Bytes = bytes
+except (NameError, TypeError):
+    class Bytes(str):
+        def __repr__(self):
+            return 'Bytes(%s)' % str.__repr__(self)
 
 def get_mixed_type_key(obj):
     """Return a key suitable for sorting between networks and addresses.
@@ -434,11 +446,6 @@ class _BaseIP(_IPAddrBase):
     used by single IP addresses.
 
     """
-
-    def __init__(self, address):
-        if (not (_compat_has_real_bytes and isinstance(address, bytes))
-            and '/' in str(address)):
-            raise AddressValueError(address)
 
     def __eq__(self, other):
         try:
@@ -1184,7 +1191,6 @@ class IPv4Address(_BaseV4, _BaseIP):
             AddressValueError: If ipaddr isn't a valid IPv4 address.
 
         """
-        _BaseIP.__init__(self, address)
         _BaseV4.__init__(self, address)
 
         # Efficient constructor from integer.
@@ -1195,10 +1201,12 @@ class IPv4Address(_BaseV4, _BaseIP):
             return
 
         # Constructing from a packed address
-        if _compat_has_real_bytes:
-            if isinstance(address, bytes) and len(address) == 4:
-                self._ip = struct.unpack('!I', address)[0]
-                return
+        if isinstance(address, Bytes):
+            try:
+                self._ip, = struct.unpack('!I', address)
+            except struct.error:
+                raise AddressValueError(address)  # Wrong length.
+            return
 
         # Assume input argument to be string or any object representation
         # which converts into a formatted IP string.
@@ -1267,24 +1275,13 @@ class IPv4Network(_BaseV4, _BaseNet):
         _BaseNet.__init__(self, address)
         _BaseV4.__init__(self, address)
 
-        # Efficient constructor from integer.
-        if isinstance(address, (int, long)):
-            self._ip = address
-            self.ip = IPv4Address(self._ip)
+        # Constructing from an integer or packed bytes.
+        if isinstance(address, (int, long, Bytes)):
+            self.ip = IPv4Address(address)
+            self._ip = self.ip._ip
             self._prefixlen = self._max_prefixlen
             self.netmask = IPv4Address(self._ALL_ONES)
-            if address < 0 or address > self._ALL_ONES:
-                raise AddressValueError(address)
             return
-
-        # Constructing from a packed address
-        if _compat_has_real_bytes:
-            if isinstance(address, bytes) and len(address) == 4:
-                self._ip = struct.unpack('!I', address)[0]
-                self.ip = IPv4Address(self._ip)
-                self._prefixlen = self._max_prefixlen
-                self.netmask = IPv4Address(self._ALL_ONES)
-                return
 
         # Assume input argument to be string or any object representation
         # which converts into a formatted IP prefix string.
@@ -1764,7 +1761,6 @@ class IPv6Address(_BaseV6, _BaseIP):
             AddressValueError: If address isn't a valid IPv6 address.
 
         """
-        _BaseIP.__init__(self, address)
         _BaseV6.__init__(self, address)
 
         # Efficient constructor from integer.
@@ -1775,11 +1771,13 @@ class IPv6Address(_BaseV6, _BaseIP):
             return
 
         # Constructing from a packed address
-        if _compat_has_real_bytes:
-            if isinstance(address, bytes) and len(address) == 16:
-                tmp = struct.unpack('!QQ', address)
-                self._ip = (tmp[0] << 64) | tmp[1]
-                return
+        if isinstance(address, Bytes):
+            try:
+                hi, lo = struct.unpack('!QQ', address)
+            except struct.error:
+                raise AddressValueError(address)  # Wrong length.
+            self._ip = (hi << 64) | lo
+            return
 
         # Assume input argument to be string or any object representation
         # which converts into a formatted IP string.
@@ -1840,25 +1838,13 @@ class IPv6Network(_BaseV6, _BaseNet):
         _BaseNet.__init__(self, address)
         _BaseV6.__init__(self, address)
 
-        # Efficient constructor from integer.
-        if isinstance(address, (int, long)):
-            self._ip = address
-            self.ip = IPv6Address(self._ip)
+        # Constructing from an integer or packed bytes.
+        if isinstance(address, (int, long, Bytes)):
+            self.ip = IPv6Address(address)
+            self._ip = self.ip._ip
             self._prefixlen = self._max_prefixlen
             self.netmask = IPv6Address(self._ALL_ONES)
-            if address < 0 or address > self._ALL_ONES:
-                raise AddressValueError(address)
             return
-
-        # Constructing from a packed address
-        if _compat_has_real_bytes:
-            if isinstance(address, bytes) and len(address) == 16:
-                tmp = struct.unpack('!QQ', address)
-                self._ip = (tmp[0] << 64) | tmp[1]
-                self.ip = IPv6Address(self._ip)
-                self._prefixlen = self._max_prefixlen
-                self.netmask = IPv6Address(self._ALL_ONES)
-                return
 
         # Assume input argument to be string or any object representation
         # which converts into a formatted IP prefix string.
