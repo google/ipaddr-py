@@ -23,10 +23,10 @@ import time
 import ipaddr
 
 # Compatibility function to cast str to bytes objects
-if ipaddr._compat_has_real_bytes:
-    _cb = lambda bytestr: bytes(bytestr, 'charmap')
+if issubclass(ipaddr.Bytes, str):
+    _cb = ipaddr.Bytes
 else:
-    _cb = str
+    _cb = lambda bytestr: bytes(bytestr, 'charmap')
 
 class IpaddrUnitTest(unittest.TestCase):
 
@@ -131,6 +131,8 @@ class IpaddrUnitTest(unittest.TestCase):
         AssertInvalidIP(":1:2:3:4:5:6:7")
         AssertInvalidIP("1:2:3:4:5:6:7:")
         AssertInvalidIP(":1:2:3:4:5:6:")
+        AssertInvalidIP("192.0.2.1/32")
+        AssertInvalidIP("2001:db8::1/128")
 
         self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv4Network, '')
         self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv4Network,
@@ -233,26 +235,25 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(ipaddr.IPNetwork(self.ipv4.ip).version, 4)
         self.assertEqual(ipaddr.IPNetwork(self.ipv6.ip).version, 6)
 
-    if ipaddr._compat_has_real_bytes: # on python3+
-        def testIpFromPacked(self):
-            ip = ipaddr.IPNetwork
+    def testIpFromPacked(self):
+        ip = ipaddr.IPNetwork
 
-            self.assertEqual(self.ipv4.ip,
-                             ip(_cb('\x01\x02\x03\x04')).ip)
-            self.assertEqual(ip('255.254.253.252'),
-                             ip(_cb('\xff\xfe\xfd\xfc')))
-            self.assertRaises(ValueError, ipaddr.IPNetwork, _cb('\x00' * 3))
-            self.assertRaises(ValueError, ipaddr.IPNetwork, _cb('\x00' * 5))
-            self.assertEqual(self.ipv6.ip,
-                             ip(_cb('\x20\x01\x06\x58\x02\x2a\xca\xfe'
-                               '\x02\x00\x00\x00\x00\x00\x00\x01')).ip)
-            self.assertEqual(ip('ffff:2:3:4:ffff::'),
-                             ip(_cb('\xff\xff\x00\x02\x00\x03\x00\x04' +
-                                   '\xff\xff' + '\x00' * 6)))
-            self.assertEqual(ip('::'),
-                             ip(_cb('\x00' * 16)))
-            self.assertRaises(ValueError, ip, _cb('\x00' * 15))
-            self.assertRaises(ValueError, ip, _cb('\x00' * 17))
+        self.assertEqual(self.ipv4.ip,
+                         ip(_cb('\x01\x02\x03\x04')).ip)
+        self.assertEqual(ip('255.254.253.252'),
+                         ip(_cb('\xff\xfe\xfd\xfc')))
+        self.assertRaises(ValueError, ipaddr.IPNetwork, _cb('\x00' * 3))
+        self.assertRaises(ValueError, ipaddr.IPNetwork, _cb('\x00' * 5))
+        self.assertEqual(self.ipv6.ip,
+                         ip(_cb('\x20\x01\x06\x58\x02\x2a\xca\xfe'
+                           '\x02\x00\x00\x00\x00\x00\x00\x01')).ip)
+        self.assertEqual(ip('ffff:2:3:4:ffff::'),
+                         ip(_cb('\xff\xff\x00\x02\x00\x03\x00\x04' +
+                               '\xff\xff' + '\x00' * 6)))
+        self.assertEqual(ip('::'),
+                         ip(_cb('\x00' * 16)))
+        self.assertRaises(ValueError, ip, _cb('\x00' * 15))
+        self.assertRaises(ValueError, ip, _cb('\x00' * 17))
 
     def testGetIp(self):
         self.assertEqual(int(self.ipv4.ip), 16909060)
