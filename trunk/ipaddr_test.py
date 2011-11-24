@@ -333,6 +333,11 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(self.ipv4.subnet(), list(self.ipv4.iter_subnets()))
         self.assertEqual(self.ipv6.subnet(), list(self.ipv6.iter_subnets()))
 
+    def testIterHosts(self):
+        self.assertEqual([ipaddr.IPv4Address('2.0.0.0'),
+                          ipaddr.IPv4Address('2.0.0.1')],
+                         list(ipaddr.IPNetwork('2.0.0.0/31').iterhosts()))
+
     def testFancySubnetting(self):
         self.assertEqual(sorted(self.ipv4.subnet(prefixlen_diff=3)),
                          sorted(self.ipv4.subnet(new_prefix=27)))

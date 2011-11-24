@@ -1323,6 +1323,8 @@ class IPv4Network(_BaseV4, _BaseNet):
             if self.ip != self.network:
                 raise ValueError('%s has host bits set' %
                                  self.ip)
+        if self._prefixlen == (self._max_prefixlen - 1):
+            self.iterhosts = self.__iter__
 
     def _is_hostmask(self, ip_str):
         """Test if the IP string is a hostmask (rather than a netmask).
@@ -1870,6 +1872,8 @@ class IPv6Network(_BaseV6, _BaseNet):
             if self.ip != self.network:
                 raise ValueError('%s has host bits set' %
                                  self.ip)
+        if self._prefixlen == (self._max_prefixlen - 1):
+            self.iterhosts = self.__iter__
 
     def _is_valid_netmask(self, prefixlen):
         """Verify that the netmask/prefixlen is valid.
