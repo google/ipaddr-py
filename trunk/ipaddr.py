@@ -1022,10 +1022,8 @@ class _BaseV4(object):
         self._version = 4
         self._max_prefixlen = IPV4LENGTH
 
-    def _explode_shorthand_ip_string(self, ip_str=None):
-        if not ip_str:
-            ip_str = str(self)
-        return ip_str
+    def _explode_shorthand_ip_string(self):
+        return str(self)
 
     def _ip_int_from_string(self, ip_str):
         """Turn the given IP string into an integer for comparison.
@@ -1571,7 +1569,7 @@ class _BaseV6(object):
         hextets = self._compress_hextets(hextets)
         return ':'.join(hextets)
 
-    def _explode_shorthand_ip_string(self, ip_str=None):
+    def _explode_shorthand_ip_string(self):
         """Expand a shortened IPv6 address.
 
         Args:
@@ -1581,10 +1579,10 @@ class _BaseV6(object):
             A string, the expanded IPv6 address.
 
         """
-        if not ip_str:
+        if isinstance(self, _BaseNet):
+            ip_str = str(self.ip)
+        else:
             ip_str = str(self)
-            if isinstance(self, _BaseNet):
-                ip_str = str(self.ip)
 
         ip_int = self._ip_int_from_string(ip_str)
         parts = []
@@ -1592,6 +1590,8 @@ class _BaseV6(object):
             parts.append('%04x' % (ip_int & 0xFFFF))
             ip_int >>= 16
         parts.reverse()
+        if isinstance(self, _BaseNet):
+            return '%s/%d' % (':'.join(parts), self.prefixlen)
         return ':'.join(parts)
 
     @property
