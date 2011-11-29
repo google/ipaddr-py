@@ -1073,10 +1073,8 @@ class _BaseV4(object):
         self._version = 4
         self._max_prefixlen = IPV4LENGTH
 
-    def _explode_shorthand_ip_string(self, ip_str=None):
-        if not ip_str:
-            ip_str = str(self)
-        return ip_str
+    def _explode_shorthand_ip_string(self):
+        return str(self)
 
     def _ip_int_from_string(self, ip_str):
         """Turn the given IP string into an integer for comparison.
@@ -1376,6 +1374,8 @@ class IPv4Interface(_BaseV4, _BaseInterface):
             self._prefixlen = self._max_prefixlen
             self.netmask = IPv4Address(self._ip_int_from_prefix(
                 self._prefixlen))
+        if self._prefixlen == (self._max_prefixlen - 1):
+            self.iterhosts = self.__iter__
 
     def _is_hostmask(self, ip_str):
         """Test if the IP string is a hostmask (rather than a netmask).
@@ -1647,7 +1647,7 @@ class _BaseV6(object):
         hextets = self._compress_hextets(hextets)
         return ':'.join(hextets)
 
-    def _explode_shorthand_ip_string(self, ip_str=None):
+    def _explode_shorthand_ip_string(self):
         """Expand a shortened IPv6 address.
 
         Args:
@@ -1657,10 +1657,10 @@ class _BaseV6(object):
             A string, the expanded IPv6 address.
 
         """
-        if not ip_str:
+        if isinstance(self, _BaseInterface):
+            ip_str = str(self.ip)
+        else:
             ip_str = str(self)
-            if isinstance(self, _BaseInterface):
-                ip_str = str(self.ip)
 
         ip_int = self._ip_int_from_string(ip_str)
         parts = []
@@ -1668,6 +1668,8 @@ class _BaseV6(object):
             parts.append('%04x' % (ip_int & 0xFFFF))
             ip_int >>= 16
         parts.reverse()
+        if isinstance(self, _BaseInterface):
+            return '%s/%d' % (':'.join(parts), self.prefixlen)
         return ':'.join(parts)
 
     @property
@@ -1954,6 +1956,8 @@ class IPv6Interface(_BaseV6, _BaseInterface):
             self._prefixlen = self._max_prefixlen
 
         self.netmask = IPv6Address(self._ip_int_from_prefix(self._prefixlen))
+        if self._prefixlen == (self._max_prefixlen - 1):
+            self.iterhosts = self.__iter__
 
 
     def _is_valid_netmask(self, prefixlen):

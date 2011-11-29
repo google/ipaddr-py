@@ -333,6 +333,11 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(self.ipv4.subnet(), list(self.ipv4.iter_subnets()))
         self.assertEqual(self.ipv6.subnet(), list(self.ipv6.iter_subnets()))
 
+    def testIterHosts(self):
+        self.assertEqual([ipaddr.IPv4Address('2.0.0.0'),
+                          ipaddr.IPv4Address('2.0.0.1')],
+                         list(ipaddr.ip_interface('2.0.0.0/31').iterhosts()))
+
     def testFancySubnetting(self):
         self.assertEqual(sorted(self.ipv4.subnet(prefixlen_diff=3)),
                          sorted(self.ipv4.subnet(new_prefix=27)))
@@ -967,9 +972,9 @@ class IpaddrUnitTest(unittest.TestCase):
     def testExplodeShortHandIpStr(self):
         addr1 = ipaddr.IPv6Interface('2001::1')
         addr2 = ipaddr.IPv6Address('2001:0:5ef5:79fd:0:59d:a0e5:ba1')
-        self.assertEqual('2001:0000:0000:0000:0000:0000:0000:0001',
-                         addr1._explode_shorthand_ip_string(str(addr1.ip)))
-        self.assertEqual('0000:0000:0000:0000:0000:0000:0000:0001',
+        self.assertEqual('2001:0000:0000:0000:0000:0000:0000:0001/128',
+                         addr1.exploded)
+        self.assertEqual('0000:0000:0000:0000:0000:0000:0000:0001/128',
                          ipaddr.IPv6Interface('::1/128').exploded)
         # issue 77
         self.assertEqual('2001:0000:5ef5:79fd:0000:059d:a0e5:0ba1',
