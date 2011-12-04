@@ -584,7 +584,7 @@ class _BaseInterface(_IPAddrBase):
            or broadcast addresses.
 
         """
-        cur = int(self.network_address_address) + 1
+        cur = int(self.network_address) + 1
         bcast = int(self.broadcast_address) - 1
         while cur <= bcast:
             cur += 1
