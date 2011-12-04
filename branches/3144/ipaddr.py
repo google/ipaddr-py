@@ -1657,10 +1657,13 @@ class _BaseV6(object):
             A string, the expanded IPv6 address.
 
         """
-        if isinstance(self, _BaseInterface):
-            ip_str = str(self.ip)
-        else:
+        if isinstance(self, IPv6Network):
+            ip_str = str(self.network_address)
+        elif isinstance(self, _BaseAddress):
             ip_str = str(self)
+        else:
+            # _BaseInterface
+            ip_str = str(self.ip)
 
         ip_int = self._ip_int_from_string(ip_str)
         parts = []

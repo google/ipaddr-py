@@ -972,6 +972,7 @@ class IpaddrUnitTest(unittest.TestCase):
     def testExplodeShortHandIpStr(self):
         addr1 = ipaddr.IPv6Interface('2001::1')
         addr2 = ipaddr.IPv6Address('2001:0:5ef5:79fd:0:59d:a0e5:ba1')
+        addr3 = ipaddr.IPv6Network('2001::/96')
         self.assertEqual('2001:0000:0000:0000:0000:0000:0000:0001/128',
                          addr1.exploded)
         self.assertEqual('0000:0000:0000:0000:0000:0000:0000:0001/128',
@@ -979,6 +980,8 @@ class IpaddrUnitTest(unittest.TestCase):
         # issue 77
         self.assertEqual('2001:0000:5ef5:79fd:0000:059d:a0e5:0ba1',
                          addr2.exploded)
+        self.assertEqual('2001:0000:0000:0000:0000:0000:0000:0000/96',
+                         addr3.exploded)
 
     def testIntRepresentation(self):
         self.assertEqual(16909060, int(self.ipv4))
