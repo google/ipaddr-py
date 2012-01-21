@@ -4,11 +4,24 @@
 
 Here are the visible changes for each release.
 
+== 2.1.10 ==
+
+(2012-01-20)
+
+Friday night, LAUNCH LAUNCH LAUNCH!
+
+  * i84, fix iterhosts for /31's or /127's
+  * private method arg cleanup.
+  * i83, docstring issue.
+  * i87, new ipv4/ipv6 parser. patch from pmarks
+  * i90, fix copyright.
+  * bytes fix. patch from pmarks.
+	    
 == 2.1.9 ==
 
 (2011-02-22)
 
-The last outstanding issue.
+The last outstanding issues.
 
   * fix warnings from python3.2
   * fix bug in _is_shorthand_ip resulting in bad teredo addresses.
