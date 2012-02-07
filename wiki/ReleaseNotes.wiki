@@ -1,4 +1,4 @@
-#summary notes from releases
+#summary notes from releases past.
 
 = Release Notes =
 
