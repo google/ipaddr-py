@@ -433,7 +433,7 @@ def get_mixed_type_key(obj):
         IPv4Address('1.1.1.1') <= IPv4Network('1.1.1.1/24')
 
     doesn't make any sense.  There are some times however, where you may wish
-    to have ipaddr sort these for you anyway. If you need to do this, you
+    to have ipaddress sort these for you anyway. If you need to do this, you
     can use this function as the key= argument to sorted().
 
     Args:
@@ -448,7 +448,7 @@ def get_mixed_type_key(obj):
         return obj._get_address_key()
     return NotImplemented
 
-class _IPAddrBase(object):
+class _IPAddressBase(object):
 
     """The mother class."""
 
@@ -472,7 +472,7 @@ class _IPAddrBase(object):
         return str(self)
 
 
-class _BaseAddress(_IPAddrBase):
+class _BaseAddress(_IPAddressBase):
 
     """A generic IP object.
 
@@ -562,7 +562,7 @@ class _BaseAddress(_IPAddrBase):
         raise NotImplementedError('BaseIP has no version')
 
 
-class _BaseInterface(_IPAddrBase):
+class _BaseInterface(_IPAddressBase):
 
     """A generic IP object.
 
@@ -1237,7 +1237,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
                 IPv4Address('192.168.1.1')
 
         Raises:
-            AddressValueError: If ipaddr isn't a valid IPv4 address.
+            AddressValueError: If ipaddressisn't a valid IPv4 address.
 
         """
         _BaseAddress.__init__(self, address)
@@ -1309,7 +1309,7 @@ class IPv4Interface(_BaseV4, _BaseInterface):
                 IPv4Interface('192.168.1.1')
 
         Raises:
-            AddressValueError: If ipaddr isn't a valid IPv4 address.
+            AddressValueError: If ipaddressisn't a valid IPv4 address.
             NetmaskValueError: If the netmask isn't valid for
               an IPv4 address.
             ValueError: If strict was True and a network address was not
