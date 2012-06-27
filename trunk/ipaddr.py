@@ -141,7 +141,7 @@ def v6_int_to_packed(address):
     """The binary representation of this address.
 
     Args:
-        address: An integer representation of an IPv4 IP address.
+        address: An integer representation of an IPv6 IP address.
 
     Returns:
         The binary representation of this address.
