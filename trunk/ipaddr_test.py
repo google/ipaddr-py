@@ -133,6 +133,7 @@ class IpaddrUnitTest(unittest.TestCase):
         AssertInvalidIP(":1:2:3:4:5:6:")
         AssertInvalidIP("192.0.2.1/32")
         AssertInvalidIP("2001:db8::1/128")
+        AssertInvalidIP("02001:db8::")
 
         self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv4Network, '')
         self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv4Network,

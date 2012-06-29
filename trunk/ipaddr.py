@@ -1490,6 +1490,8 @@ class _BaseV6(object):
         # Whitelist the characters, since int() allows a lot of bizarre stuff.
         if not self._HEX_DIGITS.issuperset(hextet_str):
             raise ValueError
+        if len(hextet_str) > 4:
+          raise ValueError
         hextet_int = int(hextet_str, 16)
         if hextet_int > 0xFFFF:
             raise ValueError
