@@ -1524,7 +1524,7 @@ class _BaseV6(object):
         if not self._HEX_DIGITS.issuperset(hextet_str):
             raise ValueError
         if len(hextet_str) > 4:
-          raise ValueError
+            raise ValueError
         hextet_int = int(hextet_str, 16)
         if hextet_int > 0xFFFF:
             raise ValueError
