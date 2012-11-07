@@ -1651,7 +1651,7 @@ class _BaseV6(object):
             See RFC 2373 2.7 for details.
 
         """
-        return self in IPv6Network('ff00::/8')
+        return self in _BaseV6._IP_MULTICAST
 
     @property
     def is_reserved(self):
@@ -1662,21 +1662,21 @@ class _BaseV6(object):
             reserved IPv6 Network ranges.
 
         """
-        return (self in IPv6Network('::/8') or
-                self in IPv6Network('100::/8') or
-                self in IPv6Network('200::/7') or
-                self in IPv6Network('400::/6') or
-                self in IPv6Network('800::/5') or
-                self in IPv6Network('1000::/4') or
-                self in IPv6Network('4000::/3') or
-                self in IPv6Network('6000::/3') or
-                self in IPv6Network('8000::/3') or
-                self in IPv6Network('A000::/3') or
-                self in IPv6Network('C000::/3') or
-                self in IPv6Network('E000::/4') or
-                self in IPv6Network('F000::/5') or
-                self in IPv6Network('F800::/6') or
-                self in IPv6Network('FE00::/9'))
+        return (self in _BaseV6._IP_RESERVED0 or
+                self in _BaseV6._IP_RESERVED1 or
+                self in _BaseV6._IP_RESERVED2 or
+                self in _BaseV6._IP_RESERVED4 or
+                self in _BaseV6._IP_RESERVED8 or
+                self in _BaseV6._IP_RESERVED10 or
+                self in _BaseV6._IP_RESERVED40 or
+                self in _BaseV6._IP_RESERVED60 or
+                self in _BaseV6._IP_RESERVED80 or
+                self in _BaseV6._IP_RESERVEDA0 or
+                self in _BaseV6._IP_RESERVEDC0 or
+                self in _BaseV6._IP_RESERVEDE0 or
+                self in _BaseV6._IP_RESERVEDF0 or
+                self in _BaseV6._IP_RESERVEDF8 or
+                self in _BaseV6._IP_RESERVEDFE)
 
     @property
     def is_unspecified(self):
@@ -1708,7 +1708,7 @@ class _BaseV6(object):
             A boolean, True if the address is reserved per RFC 4291.
 
         """
-        return self in IPv6Network('fe80::/10')
+        return self in _BaseV6._IP_LINK_LOCAL
 
     @property
     def is_site_local(self):
@@ -1722,7 +1722,7 @@ class _BaseV6(object):
             A boolean, True if the address is reserved per RFC 3513 2.5.6.
 
         """
-        return self in IPv6Network('fec0::/10')
+        return self in _BaseV6._IP_SITE_LOCAL
 
     @property
     def is_private(self):
@@ -1732,7 +1732,7 @@ class _BaseV6(object):
             A boolean, True if the address is reserved per RFC 4193.
 
         """
-        return self in IPv6Network('fc00::/7')
+        return self in _BaseV6._IP_PRIVATE
 
     @property
     def ipv4_mapped(self):
@@ -1930,3 +1930,23 @@ class IPv6Network(_BaseV6, _BaseNet):
     @property
     def with_netmask(self):
         return self.with_prefixlen
+
+_BaseV6._IP_PRIVATE = IPv6Network('fc00::/7')
+_BaseV6._IP_MULTICAST = IPv6Network('ff00::/8')
+_BaseV6._IP_LINK_LOCAL = IPv6Network('fe80::/10')
+_BaseV6._IP_SITE_LOCAL = IPv6Network('fec0::/10')
+_BaseV6._IP_RESERVED0 = IPv6Network('::/8')
+_BaseV6._IP_RESERVED1 = IPv6Network('100::/8')
+_BaseV6._IP_RESERVED2 = IPv6Network('200::/7')
+_BaseV6._IP_RESERVED4 = IPv6Network('400::/6')
+_BaseV6._IP_RESERVED8 = IPv6Network('800::/5')
+_BaseV6._IP_RESERVED10 = IPv6Network('1000::/4')
+_BaseV6._IP_RESERVED40 = IPv6Network('4000::/3')
+_BaseV6._IP_RESERVED60 = IPv6Network('6000::/3')
+_BaseV6._IP_RESERVED80 = IPv6Network('8000::/3')
+_BaseV6._IP_RESERVEDA0 = IPv6Network('A000::/3')
+_BaseV6._IP_RESERVEDC0 = IPv6Network('C000::/3')
+_BaseV6._IP_RESERVEDE0 = IPv6Network('E000::/4')
+_BaseV6._IP_RESERVEDF0 = IPv6Network('F000::/5')
+_BaseV6._IP_RESERVEDF8 = IPv6Network('F800::/6')
+_BaseV6._IP_RESERVEDFE = IPv6Network('FE00::/9')
