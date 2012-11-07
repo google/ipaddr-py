@@ -1180,7 +1180,7 @@ class _BaseV4(object):
             reserved IPv4 Network range.
 
        """
-       return self in IPv4Network('240.0.0.0/4')
+       return self in _BaseV4._IP_RESERVED
 
     @property
     def is_private(self):
@@ -1190,9 +1190,9 @@ class _BaseV4(object):
             A boolean, True if the address is reserved per RFC 1918.
 
         """
-        return (self in IPv4Network('10.0.0.0/8') or
-                self in IPv4Network('172.16.0.0/12') or
-                self in IPv4Network('192.168.0.0/16'))
+        return (self in _BaseV4._IP_PRIVATE_10 or
+                self in _BaseV4._IP_PRIVATE_172_16 or
+                self in _BaseV4._IP_PRIVATE_192_168 )
 
     @property
     def is_multicast(self):
@@ -1203,7 +1203,7 @@ class _BaseV4(object):
             See RFC 3171 for details.
 
         """
-        return self in IPv4Network('224.0.0.0/4')
+        return self in _BaseV4._IP_MULTICAST
 
     @property
     def is_unspecified(self):
@@ -1214,7 +1214,7 @@ class _BaseV4(object):
             RFC 5735 3.
 
         """
-        return self in IPv4Network('0.0.0.0')
+        return self in _BaseV4._IP_UNSPECIFIED
 
     @property
     def is_loopback(self):
@@ -1224,7 +1224,7 @@ class _BaseV4(object):
             A boolean, True if the address is a loopback per RFC 3330.
 
         """
-        return self in IPv4Network('127.0.0.0/8')
+        return self in _BaseV4._IP_LOOKBACK
 
     @property
     def is_link_local(self):
@@ -1234,7 +1234,7 @@ class _BaseV4(object):
             A boolean, True if the address is link-local per RFC 3927.
 
         """
-        return self in IPv4Network('169.254.0.0/16')
+        return self in _BaseV4._IP_LINK_LOCAL
 
 
 class IPv4Address(_BaseV4, _BaseIP):
@@ -1401,6 +1401,15 @@ class IPv4Network(_BaseV4, _BaseNet):
     IsLoopback = lambda self: self.is_loopback
     IsLinkLocal = lambda self: self.is_link_local
 
+#Those are used to speed up functions from _BaseV4
+_BaseV4._IP_PRIVATE_10 = IPv4Network('10.0.0.0/8')
+_BaseV4._IP_PRIVATE_172_16 = IPv4Network('172.16.0.0/12')
+_BaseV4._IP_PRIVATE_192_168 = IPv4Network('192.168.0.0/16')
+_BaseV4._IP_RESERVED = IPv4Network('240.0.0.0/4')
+_BaseV4._IP_MULTICAST = IPv4Network('224.0.0.0/4')
+_BaseV4._IP_UNSPECIFIED = IPv4Network('0.0.0.0')
+_BaseV4._IP_LOOKBACK = IPv4Network('127.0.0.0/8')
+_BaseV4._IP_LINK_LOCAL = IPv4Network('169.254.0.0/16')
 
 class _BaseV6(object):
 
