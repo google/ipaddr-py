@@ -1191,9 +1191,15 @@ class _BaseV4(object):
             A boolean, True if the address is reserved per RFC 1918.
 
         """
-        return (self in _BaseV4._IP_PRIVATE_10 or
-                self in _BaseV4._IP_PRIVATE_172_16 or
-                self in _BaseV4._IP_PRIVATE_192_168 )
+#        return (self in _BaseV4._IP_PRIVATE_10 or
+#                self in _BaseV4._IP_PRIVATE_172_16 or
+#                self in _BaseV4._IP_PRIVATE_192_168 )
+
+        # The following is equivalent to the above, but faster as it
+        # remove function calls.
+        return (_BaseV4._IP_PRIVATE_10._ip <= self._ip <= _BaseV4._IP_PRIVATE_10.broadcast._ip or
+                _BaseV4._IP_PRIVATE_172_16._ip <= self._ip <= _BaseV4._IP_PRIVATE_172_16.broadcast._ip or
+                _BaseV4._IP_PRIVATE_192_168._ip <= self._ip <= _BaseV4._IP_PRIVATE_192_168.broadcast._ip)
 
     @property
     def is_multicast(self):
