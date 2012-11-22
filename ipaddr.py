@@ -1153,10 +1153,14 @@ class _BaseV4(object):
             The IP address as a string in dotted decimal notation.
 
         """
-        octets = []
-        for _ in xrange(4):
-            octets.insert(0, str(ip_int & 0xFF))
-            ip_int >>= 8
+        octets = [None, None, None, None]
+        octets[3] = str(ip_int & 0xFF)
+        ip_int >>= 8
+        octets[2] = str(ip_int & 0xFF)
+        ip_int >>= 8
+        octets[1] = str(ip_int & 0xFF)
+        ip_int >>= 8
+        octets[0] = str(ip_int & 0xFF)
         return '.'.join(octets)
 
     @property
