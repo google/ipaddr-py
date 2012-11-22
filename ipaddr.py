@@ -1210,6 +1210,9 @@ class _BaseV4(object):
             See RFC 3171 for details.
 
         """
+        # Optimized version of following line
+        return (_BaseV4._IP_MULTICAST._ip <= self._ip <=
+                _BaseV4._IP_MULTICAST.broadcast._ip)
         return self in _BaseV4._IP_MULTICAST
 
     @property
@@ -1221,6 +1224,9 @@ class _BaseV4(object):
             RFC 5735 3.
 
         """
+        # Optimized version of following line
+        return (_BaseV4._IP_UNSPECIFIED._ip <= self._ip <=
+                _BaseV4._IP_UNSPECIFIED.broadcast._ip)
         return self in _BaseV4._IP_UNSPECIFIED
 
     @property
@@ -1231,6 +1237,9 @@ class _BaseV4(object):
             A boolean, True if the address is a loopback per RFC 3330.
 
         """
+        # Optimized version of following line
+        return (_BaseV4._IP_LOOKBACK._ip <= self._ip <=
+                _BaseV4._IP_LOOKBACK.broadcast._ip)
         return self in _BaseV4._IP_LOOKBACK
 
     @property
@@ -1241,6 +1250,9 @@ class _BaseV4(object):
             A boolean, True if the address is link-local per RFC 3927.
 
         """
+        # Optimized version of following line
+        return (_BaseV4._IP_LINK_LOCAL._ip <= self._ip <=
+                _BaseV4._IP_LINK_LOCAL.broadcast._ip)
         return self in _BaseV4._IP_LINK_LOCAL
 
 
