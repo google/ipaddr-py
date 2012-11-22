@@ -513,7 +513,7 @@ class _BaseIP(_IPAddrBase):
         return '%s(%r)' % (self.__class__.__name__, str(self))
 
     def __str__(self):
-        return  '%s' % self._string_from_ip_int(self._ip)
+        return  self._string_from_ip_int(self._ip)
 
     def __hash__(self):
         return hash(hex(long(self._ip)))
