@@ -1185,6 +1185,8 @@ class _BaseV4(object):
             reserved IPv4 Network range.
 
        """
+       return 4026531840 <= self._ip <= 4294967295
+       return _BaseV4._IP_RESERVED._ip <= self._ip <= _BaseV4._IP_RESERVED.broadcast._ip
        return self in _BaseV4._IP_RESERVED
 
     @property
@@ -1201,9 +1203,12 @@ class _BaseV4(object):
 
         # The following is equivalent to the above, but faster as it
         # remove function calls.
-        return (_BaseV4._IP_PRIVATE_10._ip <= self._ip <= _BaseV4._IP_PRIVATE_10.broadcast._ip or
-                _BaseV4._IP_PRIVATE_172_16._ip <= self._ip <= _BaseV4._IP_PRIVATE_172_16.broadcast._ip or
-                _BaseV4._IP_PRIVATE_192_168._ip <= self._ip <= _BaseV4._IP_PRIVATE_192_168.broadcast._ip)
+        return ((167772160 <= self._ip <= 184549375) or
+                (2886729728 <= self._ip <= 2887778303) or
+                (3232235520 <= self._ip <= 3232301055))
+        return ((_BaseV4._IP_PRIVATE_10._ip <= self._ip <= _BaseV4._IP_PRIVATE_10.broadcast._ip )or
+                (_BaseV4._IP_PRIVATE_172_16._ip <= self._ip <= _BaseV4._IP_PRIVATE_172_16.broadcast._ip) or
+                (_BaseV4._IP_PRIVATE_192_168._ip <= self._ip <= _BaseV4._IP_PRIVATE_192_168.broadcast._ip))
 
     @property
     def is_multicast(self):
@@ -1215,6 +1220,7 @@ class _BaseV4(object):
 
         """
         # Optimized version of following line
+        return (3758096384 <= self._ip <= 4026531839)
         return (_BaseV4._IP_MULTICAST._ip <= self._ip <=
                 _BaseV4._IP_MULTICAST.broadcast._ip)
         return self in _BaseV4._IP_MULTICAST
@@ -1229,6 +1235,7 @@ class _BaseV4(object):
 
         """
         # Optimized version of following line
+        return self._ip == 0
         return (_BaseV4._IP_UNSPECIFIED._ip <= self._ip <=
                 _BaseV4._IP_UNSPECIFIED.broadcast._ip)
         return self in _BaseV4._IP_UNSPECIFIED
@@ -1242,9 +1249,10 @@ class _BaseV4(object):
 
         """
         # Optimized version of following line
-        return (_BaseV4._IP_LOOKBACK._ip <= self._ip <=
-                _BaseV4._IP_LOOKBACK.broadcast._ip)
-        return self in _BaseV4._IP_LOOKBACK
+        return 2130706432 <= self._ip <= 2147483647
+        return (_BaseV4._IP_LOOPBACK._ip <= self._ip <=
+                _BaseV4._IP_LOOPBACK.broadcast._ip)
+        return self in _BaseV4._IP_LOOPBACK
 
     @property
     def is_link_local(self):
@@ -1255,6 +1263,7 @@ class _BaseV4(object):
 
         """
         # Optimized version of following line
+        return 2851995648 <= self._ip <= 2852061183
         return (_BaseV4._IP_LINK_LOCAL._ip <= self._ip <=
                 _BaseV4._IP_LINK_LOCAL.broadcast._ip)
         return self in _BaseV4._IP_LINK_LOCAL
@@ -1431,7 +1440,7 @@ _BaseV4._IP_PRIVATE_192_168 = IPv4Network('192.168.0.0/16')
 _BaseV4._IP_RESERVED = IPv4Network('240.0.0.0/4')
 _BaseV4._IP_MULTICAST = IPv4Network('224.0.0.0/4')
 _BaseV4._IP_UNSPECIFIED = IPv4Network('0.0.0.0')
-_BaseV4._IP_LOOKBACK = IPv4Network('127.0.0.0/8')
+_BaseV4._IP_LOOPBACK = IPv4Network('127.0.0.0/8')
 _BaseV4._IP_LINK_LOCAL = IPv4Network('169.254.0.0/16')
 
 class _BaseV6(object):
