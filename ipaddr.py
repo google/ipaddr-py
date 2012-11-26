@@ -1178,16 +1178,17 @@ class _BaseV4(object):
 
     @property
     def is_reserved(self):
-       """Test if the address is otherwise IETF reserved.
+        """Test if the address is otherwise IETF reserved.
 
         Returns:
             A boolean, True if the address is within the
             reserved IPv4 Network range.
 
-       """
-       return 4026531840 <= self._ip <= 4294967295
-       return _BaseV4._IP_RESERVED._ip <= self._ip <= _BaseV4._IP_RESERVED.broadcast._ip
-       return self in _BaseV4._IP_RESERVED
+        """
+        return 4026531840 <= self._ip <= 4294967295
+        return (_BaseV4._IP_RESERVED._ip <= self._ip <=
+                _BaseV4._IP_RESERVED.broadcast._ip)
+        return self in _BaseV4._IP_RESERVED
 
     @property
     def is_private(self):
