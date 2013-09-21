@@ -158,7 +158,6 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(ipaddr.AddressValueError,
                           ipaddr.IPv4Address(1)._ip_int_from_string,
                           '1.a.2.3')
-        self.assertEqual(False, ipaddr.IPv4Network(1)._is_hostmask('1.a.2.3'))
 
     def testGetNetwork(self):
         self.assertEqual(int(self.ipv4.network), 16909056)
@@ -277,11 +276,11 @@ class IpaddrUnitTest(unittest.TestCase):
     def testZeroNetmask(self):
         ipv4_zero_netmask = ipaddr.IPv4Network('1.2.3.4/0')
         self.assertEqual(int(ipv4_zero_netmask.netmask), 0)
-        self.assertTrue(ipv4_zero_netmask._is_valid_netmask(str(0)))
+        self.assertEqual(ipv4_zero_netmask._prefix_from_prefix_string('0'), 0)
 
         ipv6_zero_netmask = ipaddr.IPv6Network('::1/0')
         self.assertEqual(int(ipv6_zero_netmask.netmask), 0)
-        self.assertTrue(ipv6_zero_netmask._is_valid_netmask(str(0)))
+        self.assertEqual(ipv6_zero_netmask._prefix_from_prefix_string('0'), 0)
 
     def testGetBroadcast(self):
         self.assertEqual(int(self.ipv4.broadcast), 16909311L)
@@ -435,10 +434,54 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(ipaddr.AddressValueError,
                           ipaddr.IPv6Network, '10/8')
 
+    def testGoodNetmaskIPv4(self):
+        self.assertEqual(str(ipaddr.IPv4Network('192.0.2.0/255.255.255.0')),
+                         '192.0.2.0/24')
+        for i in range(0, 33):
+            # Generate and re-parse the CIDR format (trivial).
+            net_str = '0.0.0.0/%d' % i
+            net = ipaddr.IPv4Network(net_str)
+            self.assertEqual(str(net), net_str)
 
-    def testBadNetMask(self):
+            # Generate and re-parse the expanded netmask.
+            self.assertEqual(
+                str(ipaddr.IPv4Network('0.0.0.0/%s' % net.netmask)),
+                net_str)
+
+            # Zero prefix is treated as decimal.
+            self.assertEqual(str(ipaddr.IPv4Network('0.0.0.0/0%d' % i)),
+                             net_str)
+
+            # Generate and re-parse the expanded hostmask.  The ambiguous cases
+            # (/0 and /32) are treated as netmasks.
+            if i in (32, 0):
+                net_str = '0.0.0.0/%d' % (32 - i)
+            self.assertEqual(
+                str(ipaddr.IPv4Network('0.0.0.0/%s' % net.hostmask)),
+                net_str)
+
+    def testGoodNetmaskIPv6(self):
+        # We only support CIDR for IPv6, because expanded netmasks are not
+        # standard notation.
+        self.assertEqual(str(ipaddr.IPv6Network('2001:db8::/32')),
+                         '2001:db8::/32')
+        for i in range(0, 129):
+            # Generate and re-parse the CIDR format (trivial).
+            net_str = '::/%d' % i
+            self.assertEqual(str(ipaddr.IPv6Network(net_str)), net_str)
+
+            # Zero prefix is treated as decimal.
+            self.assertEqual(str(ipaddr.IPv6Network('::/0%d' % i)), net_str)
+
+    def testBadNetmask(self):
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv4Network, '1.2.3.4/')
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv4Network, '1.2.3.4/-1')
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv4Network, '1.2.3.4/+1')
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv4Network, '1.2.3.4/0x1')
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv4Network, '1.2.3.4/33')
         self.assertRaises(ipaddr.NetmaskValueError,
@@ -446,9 +489,28 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv4Network, '1.1.1.1/240.255.0.0')
         self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv4Network, '1.1.1.1/255.254.128.0')
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv4Network, '1.1.1.1/0.1.127.255')
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv4Network, '1.2.3.4/1.a.2.3')
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv4Network, '1.1.1.1/::')
+        self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv6Network, '::1/')
         self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv6Network, '::1/-1')
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv6Network, '::1/+1')
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv6Network, '::1/0x1')
+        self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv6Network, '::1/129')
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv6Network, '::1/1.2.3.4')
+        # IPv6 expanded form is currently not supported.
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv6Network, '::/::')
 
     def testNth(self):
         self.assertEqual(str(self.ipv4[5]), '1.2.3.5')
@@ -761,11 +823,6 @@ class IpaddrUnitTest(unittest.TestCase):
                             + '\x00' * 6))
         self.assertEqual(ipaddr.IPv6Network('::1:0:0:0:0').packed,
                          _cb('\x00' * 6 + '\x00\x01' + '\x00' * 8))
-
-    def testIpStrFromPrefixlen(self):
-        ipv4 = ipaddr.IPv4Network('1.2.3.4/24')
-        self.assertEqual(ipv4._ip_string_from_prefix(), '255.255.255.0')
-        self.assertEqual(ipv4._ip_string_from_prefix(28), '255.255.255.240')
 
     def testIpType(self):
         ipv4net = ipaddr.IPNetwork('1.2.3.4')
