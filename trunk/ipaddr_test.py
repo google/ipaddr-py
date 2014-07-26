@@ -158,6 +158,14 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(ipaddr.AddressValueError,
                           ipaddr.IPv4Address(1)._ip_int_from_string,
                           '1.a.2.3')
+        self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv4Network,
+                          ('1.2.3.0',))
+        self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv6Network,
+                          ('2001:db8::',))
+        self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv4Network,
+                          ('1.2.3.0', 24, 0))
+        self.assertRaises(ipaddr.AddressValueError, ipaddr.IPv6Network,
+                          ('2001:db8::', 32, 0))
 
     def testGetNetwork(self):
         self.assertEqual(int(self.ipv4.network), 16909056)
@@ -443,6 +451,13 @@ class IpaddrUnitTest(unittest.TestCase):
             net = ipaddr.IPv4Network(net_str)
             self.assertEqual(str(net), net_str)
 
+            # Parse some 2-tuple inputs.
+            self.assertEqual(str(ipaddr.IPv4Network((0, i))), net_str)
+            self.assertEqual(str(ipaddr.IPv4Network(('0.0.0.0', i))), net_str)
+            self.assertEqual(
+                str(ipaddr.IPv4Network((ipaddr.IPAddress('0.0.0.0'), i))),
+                net_str)
+
             # Generate and re-parse the expanded netmask.
             self.assertEqual(
                 str(ipaddr.IPv4Network('0.0.0.0/%s' % net.netmask)),
@@ -470,6 +485,13 @@ class IpaddrUnitTest(unittest.TestCase):
             net_str = '::/%d' % i
             self.assertEqual(str(ipaddr.IPv6Network(net_str)), net_str)
 
+            # Parse some 2-tuple inputs.
+            self.assertEqual(str(ipaddr.IPv6Network((0, i))), net_str)
+            self.assertEqual(str(ipaddr.IPv6Network(('::', i))), net_str)
+            self.assertEqual(
+                str(ipaddr.IPv6Network((ipaddr.IPAddress('::'), i))),
+                net_str)
+
             # Zero prefix is treated as decimal.
             self.assertEqual(str(ipaddr.IPv6Network('::/0%d' % i)), net_str)
 
@@ -479,11 +501,15 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv4Network, '1.2.3.4/-1')
         self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv4Network, ('1.2.3.4', -1))
+        self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv4Network, '1.2.3.4/+1')
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv4Network, '1.2.3.4/0x1')
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv4Network, '1.2.3.4/33')
+        self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv4Network, ('1.2.3.4', 33))
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv4Network, '1.2.3.4/254.254.255.256')
         self.assertRaises(ipaddr.NetmaskValueError,
@@ -501,16 +527,43 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv6Network, '::1/-1')
         self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv6Network, ('::1', -1))
+        self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv6Network, '::1/+1')
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv6Network, '::1/0x1')
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv6Network, '::1/129')
         self.assertRaises(ipaddr.NetmaskValueError,
+                          ipaddr.IPv6Network, ('::1', 129))
+        self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv6Network, '::1/1.2.3.4')
         # IPv6 expanded form is currently not supported.
         self.assertRaises(ipaddr.NetmaskValueError,
                           ipaddr.IPv6Network, '::/::')
+        # The 2-tuple constructors only accept integer prefixlens for now.
+        self.assertRaises(ipaddr.NetmaskValueError, ipaddr.IPv4Network,
+                          ('0.0.0.0', '0'))
+        self.assertRaises(ipaddr.NetmaskValueError, ipaddr.IPv6Network,
+                          ('::', '0'))
+
+    def testCopyConstructors(self):
+        # Create address types with unparseable str() outputs, to ensure that
+        # the copy constructors aren't taking the slow path.
+        class BadStringIPv4Address(ipaddr.IPv4Address):
+            def __str__(self):
+                return "<IPv4>"
+        class BadStringIPv6Address(ipaddr.IPv6Address):
+            def __str__(self):
+                return "<IPv6>"
+
+        v4addr = BadStringIPv4Address('1.2.3.4')
+        self.assertEqual("<IPv4>", str(v4addr))
+        self.assertEqual(v4addr, ipaddr.IPv4Address(v4addr))
+
+        v6addr = BadStringIPv6Address('2001:db8::')
+        self.assertEqual("<IPv6>", str(v6addr))
+        self.assertEqual(v6addr, ipaddr.IPv6Address(v6addr))
 
     def testNth(self):
         self.assertEqual(str(self.ipv4[5]), '1.2.3.5')
@@ -773,7 +826,12 @@ class IpaddrUnitTest(unittest.TestCase):
     def testStrictNetworks(self):
         self.assertRaises(ValueError, ipaddr.IPNetwork, '192.168.1.1/24',
                           strict=True)
-        self.assertRaises(ValueError, ipaddr.IPNetwork, '::1/120', strict=True)
+        self.assertRaises(ValueError, ipaddr.IPNetwork, ('192.168.1.1', 24),
+                          strict=True)
+        self.assertRaises(ValueError, ipaddr.IPNetwork, '::1/120',
+                          strict=True)
+        self.assertRaises(ValueError, ipaddr.IPNetwork, ('::1', 120),
+                          strict=True)
 
     def testOverlaps(self):
         other = ipaddr.IPv4Network('1.2.3.0/30')
