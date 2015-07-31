@@ -156,16 +156,19 @@ def _find_address_range(addresses):
         addresses: a list of IPv4 or IPv6 addresses.
 
     Returns:
-        A tuple containing the first and last IP addresses in the sequence.
+        A tuple containing the first and last IP addresses in the sequence,
+        and the index of the last IP address in the sequence.
 
     """
     first = last = addresses[0]
+    last_index = 0
     for ip in addresses[1:]:
         if ip._ip == last._ip + 1:
             last = ip
+            last_index += 1
         else:
             break
-    return (first, last)
+    return (first, last, last_index)
 
 def _get_prefix_length(number1, number2, bits):
     """Get the number of leading bits that are same for two numbers.
@@ -358,8 +361,8 @@ def collapse_address_list(addresses):
     nets = sorted(set(nets))
 
     while i < len(ips):
-        (first, last) = _find_address_range(ips[i:])
-        i = ips.index(last) + 1
+        (first, last, last_index) = _find_address_range(ips[i:])
+        i += last_index + 1
         addrs.extend(summarize_address_range(first, last))
 
     return _collapse_address_list_recursive(sorted(
