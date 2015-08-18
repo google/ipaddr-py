@@ -1,0 +1,21 @@
+#summary Release instructions
+
+= How to make releases =
+
+Choose a release number; see [http://www.producingoss.com/en/development-cycle.html#release-number-simple-strategy here].
+
+If preparing for an a.b.0 release, create a [http://www.producingoss.com/en/release-branches.html release branch] called `a.b.x` (literal `x`): `svn copy -m'Creating 1.0.x release branch' https://ipaddr-py.googlecode.com/svn/trunk/ https://ipaddr-py.googlecode.com/svn/branches/1.0.x`
+
+If preparing for a micro release, first switch your client to the release branch: `svn switch https://ipaddr-py.googlecode.com/svn/branches/1.0.x` (or `svn co` to a new directory).  Then [http://svnbook.red-bean.com/en/1.1/ch04s03.html merge] the changes you want from the trunk (`svn merge -r6:7 https://ipaddr-py.googlecode.com/svn/trunk`), and commit them.
+
+== Actually making a release ==
+
+  # Run `python2.4 ipaddr_test.py; python2.6 ipaddr_test.py' to double-check that everything passes.
+  # Write ReleaseNotes in the wiki.
+  # Copy the release notes to ./RELEASENOTES and commit.
+  # Update `__version__` in ipaddr.py to a string like `'1.0.0'`, and commit to the release branch.
+  # Tag the version: `svn copy -m'Tagging 1.0.0 release' https://ipaddr-py.googlecode.com/svn/branches/1.0.x https://ipaddr-py.googlecode.com/svn/tags/1.0.0`
+  # Prepare tarball: `./setup.py sdist`.  It will appear in `./dist`.
+  # Create a [http://code.google.com/p/ipaddr-py/downloads/entry new download] on Google Code.  Use the labels `Featured`, `Type-Source`, and `OpSys-All`.
+  # Remove the `Featured` label from the previous release.  Files with this label will appear on the project front page in a green box.
+  # Make an announcement to ipaddr-py-dev@googlegroups.com and (if an a.b.0 release) to Freshmeat.  Be sure to mention notable changes.

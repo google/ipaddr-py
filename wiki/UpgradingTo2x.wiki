@@ -1,0 +1,105 @@
+This page describes the major differences between the 1.x and 2.x branches of ipaddr and what changes you need to make to your code to begin using the new versions.
+
+= Introduction =
+
+Lots of work has gone into making the 2.x branch of ipaddr easier to use and better overall. Since we'd like as many people as possible to use to new version, here's a short summary of the major changes and what you'll have to do to your code to make it work with the new version.
+
+= Details =
+
+=== Design Changes ===
+
+First and foremost, the overall design of ipaddr changed. In the 1.x branch, there was no concept of the Address, as strict 32 bit (IPv4) or 128 bit (IPv6) addresses.  This lead to confusion when the broadcast attribute of IPv4('1.1.1.0/24') was returned as 1.1.1.255/32.  The /32 implied that this was a network object being returned, albeit a network with only one host, when in fact it's not a network at all.
+
+So, in 2.x the concept of an address was introduced.  These are individual 32 bit (IPv4) or 128 bit (IPv6) IPs.  Networks can contain them, eg 
+
+{{{
+>>> ipaddr.IPv4Address('1.1.1.1') in ipaddr.IPv4Network('1.1.1.0/24')
+True
+}}}
+
+Since Addresses and Networks are fundamentally different object types now, they're no longer comparable by default.
+
+{{{
+>>> address = ipaddr.IPv4Address('192.0.2.1')
+>>> network = ipaddr.IPv4Network('192.0.2.0/24')
+>>> sorted([address, network])
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "ipaddr.py", line 539, in __lt__
+    str(self), str(other)))
+TypeError: 192.0.2.0/24 and 192.0.2.1 are not of the same type
+
+}}}
+
+IPv4 and IPv6 objects are also no longer comparable by default:
+
+{{{
+>>> four = ipaddr.IPNetwork('192.0.2.0/24')
+>>> six = ipaddr.IPNetwork('2001:db8::/32')
+>>> sorted([four, six])
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "ipaddr.py", line 536, in __lt__
+    str(self), str(other)))
+TypeError: 2001:db8::/32 and 192.0.2.0/24 are not of the same version
+
+}}}
+
+However they can be sorted by using {{{ ipaddr.get_mixed_type_key() }}} key indexing function to sorted().  E.g.,
+
+{{{
+>>> sorted([address, network], key=ipaddr.get_mixed_type_key)
+[IPv4Network('192.0.2.0/24'), IPv4Address('192.0.2.1')]
+>>> sorted([four, six], key=ipaddr.get_mixed_type_key)
+[IPv4Network('192.0.2.0/24'), IPv6Network('2001:db8::/32')]
+}}}
+
+=== Classes ===
+
+With IPv4 and IPv6, the addition of the concept of the Address give ipaddr 4 public classes.
+
+{{{
+IPv4Address
+IPv4Network
+IPv6Address
+IPv6Network
+}}}
+
+The network and address methods between the various IP versions are identical, so from the standpoint of the developer, they're mostly interchangeable.
+
+=== Constructors ===
+
+ipaddr 1.x relied mostly on the monolithic IP(string) constructor. This would return either a IPv4 or IPv6 object.  There are now two main constructors, {{{ IPAddress(address_string) }}} and {{{ IPNetwork(address_string) }}}. These constructors try to determine the type, either v4 or v6, of string or int and then return an appropriately-typed object.
+
+
+*more to come*
+
+=== Accessors ===
+
+2.x makes much greater use of Python's special methods for returning the integer or string representations of an object.
+
+|| 1.x || 2.x ||
+|| str(network) || str(network) ||
+|| network.ip || int(network.ip) or int(network) ||
+|| network.ip_ext || str(network.ip) ||
+|| network.ip_ext_full || network.exploded (for IPv6 only) ||
+|| network.netmask || int(network.netmask) ||
+|| network.netmask_ext || str(network.netmask) ||
+|| network.broadcast || int(network.broadcast) ||
+|| network.broadcast_ext || str(network.broadcast) ||
+
+Additionally, the various network attributes ({{{ .ip, .ip_ext, .network, .network_ext, .broadcast, .broadcast_ext }}}) used to return either strings or ints. As mentioned before, they return ipaddr address objects, either of type {{{IPv4Address}}} or {{{IPv6Address}}}.
+
+=== Exceptions ===
+
+In general, the exceptions are much more Pythonic.   No more inventing exceptions for every corner case since Python politely furnishes us with almost every exception type we already need. In the couple of cases where it does actually make sense for us to have our own exceptions, they're now subclassed from ValueError so you can shortcut the exception catching if you'd like and just catch ValueError.
+
+
+|| 1.x || 2.x ||
+|| ipaddr.IPv4IpValidationError || ipaddr.AddressValueError ||
+|| ipaddr.IPv6IpValidationError || ipaddr.AddressValueError ||
+|| ipaddr.IPv4NetmaskValidationError || ipaddr.NetmaskValueError ||
+|| ipaddr.IPv6NetmaskValidationError || ipaddr.NetmaskValueError ||
+|| ipaddr.IPTypeError || TypeError ||
+|| ipaddr.IPAddressExclussionError || ValueError ||
+|| ipaddr.PrefixLenDiffInvalidError || ValueError ||

@@ -1,0 +1,60 @@
+Examples for the functionality of the 2.x version of the ipaddr library.
+
+(*work in progress*)
+
+By far the best way to get to know a new library is to test it out; download it, run it in the python shell, write scripts with it, etc.
+
+Rather than just say RTFCode, some simple examples follow:
+
+the following was taken from PEP 3144:
+
+ ipaddr has four main classes most people will use:
+
+    # IPv4Address. (eg, '192.168.1.1')
+    # IPv4Network  (eg, '192.168.0.0/16')
+    # IPv6Address  (eg, '::1')
+    # IPv6Network  (eg, '2001::/32')
+
+Most of the operations a network administrator performs on networks are
+similar for both IPv4 and IPv6 networks. Ie. finding subnets, supernets,
+determining if an address is contained in a given network, etc.  Similarly,
+both addresses and networks (of the same ip version!) have much in common;
+the process for turning a given 32 or 128 bit number into a human readable
+string notation, determining if the ip is within the valid specified range,
+etc.  Finally, there are some pythonic abstractions which are valid for all
+addresses and networks, both IPv4 and IPv6.  In short, there is common
+functionality shared between (ipaddr class names in parentheses):
+
+    # all IP addresses and networks, both IPv4 and IPv6. (`_IPAddrBase`)
+    # all IP addresses of both versions. (`_BaseIP`)
+    # all IP networks of both version. (`_BaseNet`)
+    # all IPv4 objects, both addresses and networks. (`_BaseV4`)
+    # all IPv6 objects, both addresses and networks. (`_BaseV6`)
+
+Seeing this as a clear hierarchy is important for recognizing how much
+code is common between the four main classes. For this reason, ipaddr uses
+class inheritance to abstract out as much common code is possible and
+appropriate.  This lack of duplication and very clean layout also makes
+the job of the developer much easier should they need to debug code (either
+theirs or mine).
+
+Knowing that there might be cases where the developer doesn't so much care
+as to the types of IP they might be receiving, ipaddr comes with two
+important helper functions, IPAddress() and IPNetwork(). These, as you
+might guess, return the appropriately typed address or network objects for
+the given argument.
+
+Finally, as mentioned earlier, there is no meaningful natural ordering
+between IPv4 and IPv6 addresses and networks [2]. Rather than invent a
+standard, ipaddr follows Ordering Comparisons and returns a TypeError
+when asked to compare objects of differing IP versions. In practice, there
+are many ways a programmer may wish to order the addresses, so this this
+ shouldn't pose a problem for the developer who can easily write:
+
+    `v4 = [x for x in mixed_list if x._version == 4]`
+    `v6 = [x for x in mixed_list if x._version == 6]`
+
+    `# perform operations on v4 and v6 here.`
+
+    `return v4_return + v6_return`
+
