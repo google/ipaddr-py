@@ -17,9 +17,10 @@
 
 """Unittest for ipaddr module."""
 
-
-import unittest
+import pickle
 import time
+import unittest
+
 import ipaddr
 
 # Compatibility function to cast str to bytes objects
@@ -1215,6 +1216,12 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(ipaddr.IPv4Address('172.29.45.100'),
                          sixtofouraddr.sixtofour)
         self.assertFalse(bad_addr.sixtofour)
+
+    def testPickle(self):
+        for obj in (
+            ipaddr.IPv4Address('192.0.2.1'), ipaddr.IPv6Address('2001:db8::1'),
+            ipaddr.IPv4Network('192.0.2.1'), ipaddr.IPv6Network('2001:db8::1')):
+            self.assertEqual(obj, pickle.loads(pickle.dumps(obj)))
 
 
 if __name__ == '__main__':
