@@ -20,7 +20,7 @@ import ipaddr
 
 setup(name='ipaddr',
       description="Google's IP address manipulation library",
-      long_description=open('README.md').read(),
+      long_description=open('README').read(),
       maintainer='Google',
       maintainer_email='ipaddr-py-dev@googlegroups.com',
       version=ipaddr.__version__,
