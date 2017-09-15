@@ -1,8 +1,4 @@
-`ipaddr.py` is a library for working with IP addresses, both IPv4 and IPv6.
-It was developed by Google for internal use, and is now open source.
+ipaddr.py is a library for working with IP addresses, both IPv4 and IPv6.
 
-Project home page: https://github.com/google/ipaddr-py
-
-Please send contributions to ipaddr-py-dev@googlegroups.com.  Code should
-include unit tests and follow the Google Python style guide:
-https://google.github.io/styleguide/pyguide.html
+It has been superseded by ipaddress from the Python 3 standard library, and its
+Python 2 backport.
