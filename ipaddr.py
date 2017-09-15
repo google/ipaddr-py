@@ -22,7 +22,7 @@ and networks.
 
 """
 
-__version__ = '2.2.0'
+__version__ = 'git'
 
 import struct
 import sys
