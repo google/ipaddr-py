@@ -518,7 +518,7 @@ class _BaseIP(_IPAddrBase):
         return '%s(%r)' % (self.__class__.__name__, str(self))
 
     def __str__(self):
-        return  '%s' % self._string_from_ip_int(self._ip)
+        return  self._string_from_ip_int(self._ip)
 
     def __hash__(self):
         return hash(hex(long(self._ip)))
@@ -650,8 +650,9 @@ class _BaseNet(_IPAddrBase):
                     self.broadcast >= other.broadcast)
         # dealing with another address
         else:
-            return (int(self.network) <= int(other._ip) <=
-                    int(self.broadcast))
+            # I use this syntax that is faster then calling
+            # int(...)
+            return self._ip <= other._ip <= self.broadcast._ip
 
     def overlaps(self, other):
         """Tell if self is partly contained in other."""
@@ -1157,10 +1158,14 @@ class _BaseV4(object):
             The IP address as a string in dotted decimal notation.
 
         """
-        octets = []
-        for _ in xrange(4):
-            octets.insert(0, str(ip_int & 0xFF))
-            ip_int >>= 8
+        octets = [None, None, None, None]
+        octets[3] = str(ip_int & 0xFF)
+        ip_int >>= 8
+        octets[2] = str(ip_int & 0xFF)
+        ip_int >>= 8
+        octets[1] = str(ip_int & 0xFF)
+        ip_int >>= 8
+        octets[0] = str(ip_int & 0xFF)
         return '.'.join(octets)
 
     @property
@@ -1178,14 +1183,17 @@ class _BaseV4(object):
 
     @property
     def is_reserved(self):
-       """Test if the address is otherwise IETF reserved.
+        """Test if the address is otherwise IETF reserved.
 
         Returns:
             A boolean, True if the address is within the
             reserved IPv4 Network range.
 
-       """
-       return self in IPv4Network('240.0.0.0/4')
+        """
+        return 4026531840 <= self._ip <= 4294967295
+        return (_BaseV4._IP_RESERVED._ip <= self._ip <=
+                _BaseV4._IP_RESERVED.broadcast._ip)
+        return self in _BaseV4._IP_RESERVED
 
     @property
     def is_private(self):
@@ -1195,9 +1203,18 @@ class _BaseV4(object):
             A boolean, True if the address is reserved per RFC 1918.
 
         """
-        return (self in IPv4Network('10.0.0.0/8') or
-                self in IPv4Network('172.16.0.0/12') or
-                self in IPv4Network('192.168.0.0/16'))
+#        return (self in _BaseV4._IP_PRIVATE_10 or
+#                self in _BaseV4._IP_PRIVATE_172_16 or
+#                self in _BaseV4._IP_PRIVATE_192_168 )
+
+        # The following is equivalent to the above, but faster as it
+        # remove function calls.
+        return ((167772160 <= self._ip <= 184549375) or
+                (2886729728 <= self._ip <= 2887778303) or
+                (3232235520 <= self._ip <= 3232301055))
+        return ((_BaseV4._IP_PRIVATE_10._ip <= self._ip <= _BaseV4._IP_PRIVATE_10.broadcast._ip )or
+                (_BaseV4._IP_PRIVATE_172_16._ip <= self._ip <= _BaseV4._IP_PRIVATE_172_16.broadcast._ip) or
+                (_BaseV4._IP_PRIVATE_192_168._ip <= self._ip <= _BaseV4._IP_PRIVATE_192_168.broadcast._ip))
 
     @property
     def is_multicast(self):
@@ -1208,7 +1225,11 @@ class _BaseV4(object):
             See RFC 3171 for details.
 
         """
-        return self in IPv4Network('224.0.0.0/4')
+        # Optimized version of following line
+        return (3758096384 <= self._ip <= 4026531839)
+        return (_BaseV4._IP_MULTICAST._ip <= self._ip <=
+                _BaseV4._IP_MULTICAST.broadcast._ip)
+        return self in _BaseV4._IP_MULTICAST
 
     @property
     def is_unspecified(self):
@@ -1219,7 +1240,11 @@ class _BaseV4(object):
             RFC 5735 3.
 
         """
-        return self in IPv4Network('0.0.0.0')
+        # Optimized version of following line
+        return self._ip == 0
+        return (_BaseV4._IP_UNSPECIFIED._ip <= self._ip <=
+                _BaseV4._IP_UNSPECIFIED.broadcast._ip)
+        return self in _BaseV4._IP_UNSPECIFIED
 
     @property
     def is_loopback(self):
@@ -1229,7 +1254,11 @@ class _BaseV4(object):
             A boolean, True if the address is a loopback per RFC 3330.
 
         """
-        return self in IPv4Network('127.0.0.0/8')
+        # Optimized version of following line
+        return 2130706432 <= self._ip <= 2147483647
+        return (_BaseV4._IP_LOOPBACK._ip <= self._ip <=
+                _BaseV4._IP_LOOPBACK.broadcast._ip)
+        return self in _BaseV4._IP_LOOPBACK
 
     @property
     def is_link_local(self):
@@ -1239,7 +1268,11 @@ class _BaseV4(object):
             A boolean, True if the address is link-local per RFC 3927.
 
         """
-        return self in IPv4Network('169.254.0.0/16')
+        # Optimized version of following line
+        return 2851995648 <= self._ip <= 2852061183
+        return (_BaseV4._IP_LINK_LOCAL._ip <= self._ip <=
+                _BaseV4._IP_LINK_LOCAL.broadcast._ip)
+        return self in _BaseV4._IP_LINK_LOCAL
 
 
 class IPv4Address(_BaseV4, _BaseIP):
@@ -1406,6 +1439,15 @@ class IPv4Network(_BaseV4, _BaseNet):
     IsLoopback = lambda self: self.is_loopback
     IsLinkLocal = lambda self: self.is_link_local
 
+#Those are used to speed up functions from _BaseV4
+_BaseV4._IP_PRIVATE_10 = IPv4Network('10.0.0.0/8')
+_BaseV4._IP_PRIVATE_172_16 = IPv4Network('172.16.0.0/12')
+_BaseV4._IP_PRIVATE_192_168 = IPv4Network('192.168.0.0/16')
+_BaseV4._IP_RESERVED = IPv4Network('240.0.0.0/4')
+_BaseV4._IP_MULTICAST = IPv4Network('224.0.0.0/4')
+_BaseV4._IP_UNSPECIFIED = IPv4Network('0.0.0.0')
+_BaseV4._IP_LOOPBACK = IPv4Network('127.0.0.0/8')
+_BaseV4._IP_LINK_LOCAL = IPv4Network('169.254.0.0/16')
 
 class _BaseV6(object):
 
@@ -1520,7 +1562,7 @@ class _BaseV6(object):
         if not self._HEX_DIGITS.issuperset(hextet_str):
             raise ValueError
         if len(hextet_str) > 4:
-          raise ValueError
+            raise ValueError
         hextet_int = int(hextet_str, 16)
         if hextet_int > 0xFFFF:
             raise ValueError
@@ -1647,7 +1689,7 @@ class _BaseV6(object):
             See RFC 2373 2.7 for details.
 
         """
-        return self in IPv6Network('ff00::/8')
+        return self in _BaseV6._IP_MULTICAST
 
     @property
     def is_reserved(self):
@@ -1658,21 +1700,21 @@ class _BaseV6(object):
             reserved IPv6 Network ranges.
 
         """
-        return (self in IPv6Network('::/8') or
-                self in IPv6Network('100::/8') or
-                self in IPv6Network('200::/7') or
-                self in IPv6Network('400::/6') or
-                self in IPv6Network('800::/5') or
-                self in IPv6Network('1000::/4') or
-                self in IPv6Network('4000::/3') or
-                self in IPv6Network('6000::/3') or
-                self in IPv6Network('8000::/3') or
-                self in IPv6Network('A000::/3') or
-                self in IPv6Network('C000::/3') or
-                self in IPv6Network('E000::/4') or
-                self in IPv6Network('F000::/5') or
-                self in IPv6Network('F800::/6') or
-                self in IPv6Network('FE00::/9'))
+        return (self in _BaseV6._IP_RESERVED0 or
+                self in _BaseV6._IP_RESERVED1 or
+                self in _BaseV6._IP_RESERVED2 or
+                self in _BaseV6._IP_RESERVED4 or
+                self in _BaseV6._IP_RESERVED8 or
+                self in _BaseV6._IP_RESERVED10 or
+                self in _BaseV6._IP_RESERVED40 or
+                self in _BaseV6._IP_RESERVED60 or
+                self in _BaseV6._IP_RESERVED80 or
+                self in _BaseV6._IP_RESERVEDA0 or
+                self in _BaseV6._IP_RESERVEDC0 or
+                self in _BaseV6._IP_RESERVEDE0 or
+                self in _BaseV6._IP_RESERVEDF0 or
+                self in _BaseV6._IP_RESERVEDF8 or
+                self in _BaseV6._IP_RESERVEDFE)
 
     @property
     def is_unspecified(self):
@@ -1704,7 +1746,7 @@ class _BaseV6(object):
             A boolean, True if the address is reserved per RFC 4291.
 
         """
-        return self in IPv6Network('fe80::/10')
+        return self in _BaseV6._IP_LINK_LOCAL
 
     @property
     def is_site_local(self):
@@ -1718,7 +1760,7 @@ class _BaseV6(object):
             A boolean, True if the address is reserved per RFC 3513 2.5.6.
 
         """
-        return self in IPv6Network('fec0::/10')
+        return self in _BaseV6._IP_SITE_LOCAL
 
     @property
     def is_private(self):
@@ -1728,7 +1770,7 @@ class _BaseV6(object):
             A boolean, True if the address is reserved per RFC 4193.
 
         """
-        return self in IPv6Network('fc00::/7')
+        return self in _BaseV6._IP_PRIVATE
 
     @property
     def ipv4_mapped(self):
@@ -1926,3 +1968,23 @@ class IPv6Network(_BaseV6, _BaseNet):
     @property
     def with_netmask(self):
         return self.with_prefixlen
+
+_BaseV6._IP_PRIVATE = IPv6Network('fc00::/7')
+_BaseV6._IP_MULTICAST = IPv6Network('ff00::/8')
+_BaseV6._IP_LINK_LOCAL = IPv6Network('fe80::/10')
+_BaseV6._IP_SITE_LOCAL = IPv6Network('fec0::/10')
+_BaseV6._IP_RESERVED0 = IPv6Network('::/8')
+_BaseV6._IP_RESERVED1 = IPv6Network('100::/8')
+_BaseV6._IP_RESERVED2 = IPv6Network('200::/7')
+_BaseV6._IP_RESERVED4 = IPv6Network('400::/6')
+_BaseV6._IP_RESERVED8 = IPv6Network('800::/5')
+_BaseV6._IP_RESERVED10 = IPv6Network('1000::/4')
+_BaseV6._IP_RESERVED40 = IPv6Network('4000::/3')
+_BaseV6._IP_RESERVED60 = IPv6Network('6000::/3')
+_BaseV6._IP_RESERVED80 = IPv6Network('8000::/3')
+_BaseV6._IP_RESERVEDA0 = IPv6Network('A000::/3')
+_BaseV6._IP_RESERVEDC0 = IPv6Network('C000::/3')
+_BaseV6._IP_RESERVEDE0 = IPv6Network('E000::/4')
+_BaseV6._IP_RESERVEDF0 = IPv6Network('F000::/5')
+_BaseV6._IP_RESERVEDF8 = IPv6Network('F800::/6')
+_BaseV6._IP_RESERVEDFE = IPv6Network('FE00::/9')
