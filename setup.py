@@ -26,6 +26,7 @@ setup(name='ipaddr',
       version=ipaddr.__version__,
       url='https://github.com/google/ipaddr-py',
       license='Apache License, Version 2.0',
+      python_requires='==2.7',
       classifiers=[
           'Development Status :: 6 - Mature',
           'Intended Audience :: Developers',
