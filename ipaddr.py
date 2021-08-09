@@ -1137,7 +1137,7 @@ class _BaseV4(object):
             ValueError: if the octet isn't strictly a decimal from [0..255].
 
         """
-        # Whitelist the characters, since int() allows a lot of bizarre stuff.
+        # Allow list the characters, since int() allows a lot of bizarre stuff.
         if not self._DECIMAL_DIGITS.issuperset(octet_str):
             raise ValueError
         octet_int = int(octet_str, 10)
@@ -1516,7 +1516,7 @@ class _BaseV6(object):
             ValueError: if the input isn't strictly a hex number from [0..FFFF].
 
         """
-        # Whitelist the characters, since int() allows a lot of bizarre stuff.
+        # Allow list the characters, since int() allows a lot of bizarre stuff.
         if not self._HEX_DIGITS.issuperset(hextet_str):
             raise ValueError
         if len(hextet_str) > 4:
